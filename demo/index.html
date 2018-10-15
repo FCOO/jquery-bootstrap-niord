@@ -1,0 +1,190 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="da" style="font-size: 100%">
+<head>
+	<title>fcoo.dk - jquery-bootstrap-niord - Demo</title>
+	<meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta http-equiv='x-dns-prefetch-control' content='on'>
+
+	<meta name='copyright' content='FCOO'>
+	<meta name='owner' content='FCOO'>
+
+    <link  href="bower_components.css" rel="stylesheet">
+    <link  href="../src/jquery-bootstrap-niord.css" rel="stylesheet">
+    <link  href="css/fontawesome-all.css" rel="stylesheet">
+
+    <style>
+        body, html {
+            width: 100%; height: 100%;
+        }
+        .niord-div {
+            color: black;
+            width: 100%;
+            _min-height: 20px;
+            border-bottom: 1px solid red;
+        }
+        .square { position: absolute; left:100px; top:100px; width:30px; height:30px; background-color: red; border: 1px solid black; }
+    </style>
+</head>
+
+<body>
+    <div id="tooltip_me" class="square"/>
+    <script src="bower_components.js"></script>
+	<script>
+        i18next.init();
+        i18next.changeLanguage('da');
+        i18next.options.fallbackLng = i18next.language == 'da' ? 'en' : 'da';
+
+        window.theModal = null;
+        $('body').on('click', function(event){
+            if (event.target == document.body){
+                i18next.changeLanguage( i18next.language == 'da' ? 'en' : 'da');
+                console.log('New language=',i18next.language);
+
+                $('*').localize();
+                window.theModal.show();
+            }
+        });
+
+	</script>
+	<script src="../src/jquery-bootstrap-niord-message.js"></script>
+	<script src="../src/jquery-bootstrap-niord-publications.js"></script>
+	<script>
+
+        window.bsIsTouch = false;
+        window.bsIsTouch = (window.location.search =='?touch');
+
+        moment.sfSetFormat({ timezone: 'local' });
+
+        $.valueFormat.add({
+            id    : 'TEST_DATE_WEEKDAY',
+            format: function( m ){
+                return m.format('dddd DD. MMM YYYY');
+            }
+        });
+
+        window.Niord.options.vfFormatId.date_weekday = 'TEST_DATE_WEEKDAY';
+        window.Niord.options.normalModalExtendable = true;
+
+        window.Niord.options.createMap = function($element, geoJSONList){
+            $element.text('Antal geoJSON = ' + geoJSONList.length);
+
+            //function to create a map inside $element and displaying the geoJSONs in geoJSONList
+        };
+/*
+        moment.sfAddTimezone({id:'Pacific/Honolulu'});
+        moment.sfSetFormat({ timezone: 'Pacific/Honolulu' });
+*/
+/*
+        moment.sfAddTimezone({id:'America/Thule'});
+        moment.sfSetFormat({ timezone: 'America/Thule' });
+*/
+
+        Promise.defaultErrorHandler = function( reason, url ){
+            console.log(reason, url);
+        };
+
+        var $body = $('body'); var found = false; test = true;
+
+        //***************************************************
+        function display( list ){
+        window.Niord.messages._addMessage({
+            "id":"555306e4-0b0d-4d62-9a55-36ec64539aa4",
+            "created":1538733329000,
+            "updated":1539338367000,
+            "messageSeries":{"seriesId":"dma-nm"},
+            "number":792,
+            "shortId":"NM-792-18",
+            "mainType":"NM",
+            "type":"MISCELLANEOUS_NOTICE",
+            "status":"EXPIRED",
+            "areas":[{"id":605,"mrn":"urn:mrn:iho:country:gl","active":true,"descs":[{"lang":"da","name":"Grønland"},{"lang":"en","name":"Greenland"}]},{"id":614,"mrn":"urn:mrn:iho:country:no","active":true,"descs":[{"lang":"da","name":"Norge"},{"lang":"en","name":"Norway"}]}],
+            "publishDateFrom":1538736128000,
+            "publishDateTo":1539338367000,
+            "originalInformation":true,
+            "parts":[
+                {   "indexNo":0,
+                    "type":"DETAILS",
+                    "eventDates":[{"allDay":false,"fromDate":1538736128000,"toDate":1539338367000}],
+                    "geometry":{"type":"FeatureCollection","id":"ee096eeb-2475-493b-9f44-9f5d62eedae4","features":[{"type":"Feature","id":"0f620288-eb45-4f6d-9f9d-c95292fc60bd","geometry":{"type":"Point","coordinates":[-0.3458415916590265,72.4768547550305]},"properties":{"startCoordIndex":1}}]},
+                    "descs":[{"lang":"da","subject":"Ændret område for Inmarsat-C dækning","details":"<p>Den geografiske d&aelig;kning af&nbsp;Inmarsat-C i gr&oslash;nlandshavet, mellem gr&oslash;nland og norge, &aelig;ndres. Det p&aring;virkede omr&aring;de er vist som gr&oslash;nt skraveret omr&aring;de i nedenst&aring;ende kortskitse. Fart&oslash;jer i omr&aring;det kan blive forhindret i at afsende og modtage&nbsp;meddelelser via Inmarsat-C systemet.</p>\n<p>&AElig;ndringen tr&aelig;der i kraft den 30. oktober 2018, kl. 1100 UTC. Den reducerede d&aelig;kning forventes at vare i 6 uger.</p>\n<p></p>\n<p></p>"},{"lang":"en","subject":"Changed area for Inmarsat-C coverage","details":"<p>The geographical coverage of Inmarsat-C in the Greenland Sea between Greenland and Norway will be changed. The affected area are show in cross-hatched green in the map below.</p>\n<p>Vessels within the area can be&nbsp;prevented from broadcasting and recieving of messages from the Inmarsat-C system.</p>\n<p>The change will enter into force 30 October 2018, hour 1100 UTC. The reduced coverage are expected to last for 6 weeks.</p>"}],
+                    "hideSubject":true
+                }
+            ],
+            "descs":[{"lang":"da","title":"Grønland. Norge. Grønlandshavet. Ændret område for Inmarsat-C dækning.","vicinity":"Grønlandshavet","source":"Inmarsat 28. september 2018"},{"lang":"en","title":"Greenland. Norway. Greenland Sea. Changed area for Inmarsat-C coverage.","vicinity":"Greenland Sea","source":"Inmarsat 28 September 2018"}],
+            "attachments":[
+                {
+                    "type":"image/jpeg",
+                    "path":"https://niord.dma.dk/rest/repo/file/messages/5/55/555306e4-0b0d-4d62-9a55-36ec64539aa4/2/Inmarsat-C.jpg",
+                    "fileName":"Inmarsat-C.jpg",
+                    "fileSize":31536,
+                    "display":"BELOW",
+                    "descs":[
+                        {"lang":"da","caption":"Område påvirket af ændret Inmarsat-C dækning"},
+                        {"lang":"en","caption":"Area affected of changed Unmarsat-C coverage"}
+                    ]
+                }
+            ]
+        },
+        true
+    );
+
+    list.push(window.Niord.messages.messages["555306e4-0b0d-4d62-9a55-36ec64539aa4"]);
+
+
+
+            $.each( list, function( index, message ){
+
+//HER                if (message.attachments)
+//HER                    console.log(message.shortId, message.attachments);
+
+                //if ( !found && !$.isEmptyObject(message.references) ) {
+                //if ( !found && !$.isEmptyObject(message.categories) && (message.domainId == 'NW')) {
+                //if ( !found && (message.shortId == 'FA/EK-D-396 2018') ) { //Skyde område
+                //if ( !found && (message.shortId == 'NM-028-18') ) {
+                //if ( !found && (message.shortId == 'NM-774-18') ) { //GRØNLAND
+                //if ( !found && (message.shortId == 'NM-509-18') ) { //Med publication
+                //if ( !found && (message.id == '81c8a82c-8fe6-4bc2-984d-8c8d2c683080') ) { //Skydeadvarsel
+                //if ( !found && (message.shortId == 'NM-739-18') ) { //Flere publicationer
+                //if ( !found && (message.shortId == 'NM-782-18') ) { //Publicationer uden anchor
+                //if ( !found && (message.shortId == 'NM-792-18') ) { //Vedhæftelser
+                //if ( !found && (message.shortId == 'NM-063-17') ) { //Flere main area
+                //if ( !found && (message.areaLevelList[0].length > 1) ) { //Flere main area
+                //if ( !found && message.publication && message.publication.da ) { //Flere publicationer
+                //if ( !found && message.publication && (message.publication.da != message.publication.en) ) { //Forskellige antal publicationerfor dansk og engelsk
+                if ( !found && !message.shortId) { //Typisk Fire Warning
+
+                    found = true;
+                    //console.log(message.bsObject());
+                    //console.log(message);
+                    //    message.asModal('large').show();
+
+                    window.theModal = message.asModalSmall({
+                        width: 230, height: 200,
+                        fixedContent: 'OVERSKREVET',
+
+                        extended: {
+                            fixedContent: true,
+                            footer: 'Davs',
+                            width: 350
+                        }
+                    });
+
+//{ show: true, _flexWidth: true, _extraWidth: false, _static: true }
+                    //message.asModal('small').show();
+                    //HER    message.asModal('xsmall').show();
+
+
+
+                    $('#tooltip_me').bsPopover( message.bsPopoverOptions() )
+
+                }
+            });
+        }
+        //***************************************************
+
+
+        window.Niord.getMessages('', display);
+	</script>
+</body>
+</html>

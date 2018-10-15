@@ -1,0 +1,118 @@
+/***********************************************
+	jquery-bootstrap-niord.scss,
+
+	(c) 2018, FCOO
+
+	https://github.com/FCOO/jquery-bootstrap-niord
+	https://github.com/FCOO
+
+
+************************************************/
+//BOURBON - http://bourbon.io/
+@import "../bower_components/bourbon/core/bourbon";
+
+//MODERNIZR-MIXIN - https://github.com/danielguillan/modernizr-mixin
+@import "../bower_components/modernizr-mixin/stylesheets/modernizr";
+
+//MATHSASS - https://github.com/terkel/mathsass
+@import "../bower_components/mathsass/dist/math";
+
+//BOOTSTRAP variables
+@import "../bower_components/bootstrap/scss/functions";
+@import "../bower_components/bootstrap/scss/variables";
+
+
+
+$time-color-past  : #7ABAE1;
+$time-color-now   : lightgreen;
+$time-color-future: #4D72B8;
+
+
+
+//Add Bootstrap-style to modal with direct niord-content
+.niord-modal-content {
+    p, ul {
+        margin: 0;
+    }
+    table {
+        tr {
+            th { vertical-align: bottom; }
+            td { vertical-align: top;    }
+        }
+        &:not([class]) td {
+            border: 1px solid #999;
+            padding: 3px;
+        }
+    }
+
+    hr {
+        margin-top   : 3px;
+        margin-bottom: 3px;
+        border-color: #afb4ba; //= Border-color for cards
+    }
+
+    //Display <a> as block to get vertical list when content contain mutli links
+    .display-anchor-as-block {
+        a { display: block }
+    }
+
+}
+
+
+
+
+//.div to contain parent-list
+.parent-list-container {
+    padding-top: 3px;
+}
+
+
+
+//Box-shadow on tds in time-list indicading if the time-period start/end ind the past or furture
+//Set by adding classes to tr: start-before-now or start-after-now and end-before-now or end-after-now
+$time-color-width: 4px;
+
+@mixin time-color-box-shadow( $color, $direction: 1 ){
+    box-shadow: inset $direction*$time-color-width 0px 0px 0px $color;
+}
+
+
+.table.time-period {
+    //Header for time-periods
+    thead tr th {
+        &:first-child{
+            padding-left : $time-color-width + 3px;
+            @include time-color-box-shadow( $table-border-color );
+        }
+        &:last-child {
+            padding-right: $time-color-width + 3px;
+            @include time-color-box-shadow( $table-border-color, -1 );
+        }
+
+    }
+
+    //Rows with time-period
+    tbody tr {
+        //Highlight time-period covering now
+        &.start-before-now.end-after-now td {
+            background-color: $time-color-now;
+        }
+
+        //"now"-colored line between last past and first future
+        &.first-after-now {
+            border-top: $time-color-width solid $time-color-now;
+        }
+
+        //Add padding for non-empty td
+        td:first-child:not(:empty){ padding-left : $time-color-width + 3px; }
+        td:last-child:not(:empty) { padding-right: $time-color-width + 3px; }
+
+        //Set box-shadow in left or right side of td
+        &.start-before-now td:first-child { @include time-color-box-shadow( $time-color-past       ) }
+        &.start-after-now  td:first-child { @include time-color-box-shadow( $time-color-future     ) }
+
+        &.end-before-now   td:last-child  { @include time-color-box-shadow( $time-color-past  , -1 ) }
+        &.end-after-now    td:last-child  { @include time-color-box-shadow( $time-color-future, -1 ) }
+    }
+}
+

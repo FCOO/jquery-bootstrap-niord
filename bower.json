@@ -1,0 +1,41 @@
+{
+  "name": "jquery-bootstrap-niord",
+  "version": "1.0.0",
+  "homepage": "https://github.com/FCOO/jquery-bootstrap-niord",
+  "authors": [
+    "Niels Holt"
+  ],
+  "description": "",
+  "main": [
+    "dist/jquery-bootstrap-niord.js",
+    "dist/jquery-bootstrap-niord.css"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/FCOO/jquery-bootstrap-niord.git"
+  },
+  "dependencies": {
+    "jquery": "latest",
+    "niord": "fcoo/niord.js#^1.0.0",
+    "jquery-bootstrap": "fcoo/jquery-bootstrap#^1.35.6",
+    "i18next-phrases": "fcoo/i18next-phrases#^2.0.1",
+    "jquery-value-format": "fcoo/jquery-value-format#^1.6.0",
+    "pdfobject": "pipwerks/PDFObject"
+  },
+  "devDependencies": {
+    "bourbon": "latest",
+    "modernizr-mixin": "latest",
+    "mathsass": "latest"
+  },
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "moduleType": [
+    "es6"
+  ]
+}
