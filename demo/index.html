@@ -30,6 +30,8 @@
 <body>
     <div id="tooltip_me" class="square"/>
     <script src="bower_components.js"></script>
+	<script src="../src/jquery-bootstrap-niord-message.js"></script>
+	<script src="../src/jquery-bootstrap-niord-publications.js"></script>
 	<script>
         i18next.init();
         i18next.changeLanguage('da');
@@ -45,11 +47,6 @@
                 window.theModal.show();
             }
         });
-
-	</script>
-	<script src="../src/jquery-bootstrap-niord-message.js"></script>
-	<script src="../src/jquery-bootstrap-niord-publications.js"></script>
-	<script>
 
         window.bsIsTouch = false;
         window.bsIsTouch = (window.location.search =='?touch');

@@ -25304,6 +25304,30 @@ module.exports = ret;
     "use strict";
 
     /***********************************************************************
+    _isInitialized()
+    Return true if the i18next is initialized (i18next.init has been called
+    ***********************************************************************/
+//HER    i18next._isInitialized = function(){
+//HER        return !$.isEmptyObject(this.options);
+//HER    }
+
+
+    /***********************************************************************
+    While i18next hasn't been initialized a temporary version of addResource
+    is used to store the resource until i18next is initialized
+    ***********************************************************************/
+    i18next.resourceList = [];
+    i18next.addResource = function(){
+        this.resourceList.push(arguments);
+    };
+
+    i18next.on('initialized', function() {
+        $.each(i18next.resourceList, function(index, argum){
+            i18next.addResource.apply(i18next, argum);
+        });
+    });
+
+    /***********************************************************************
     _loadJSON( jsonFileName, options, resolve )
     Loading (key-)phrases from json-file(s) using fcoo/promise-get
     ***********************************************************************/
@@ -56763,8 +56787,10 @@ TODO:   truncate     : false. If true the column will be truncated. Normally onl
         init: function(){
             this.status = NOTHING;
             this.resolveList = [];  //List of functions to be called when data is loaded
-            this.rejectList = [];   //List of functions to be called when loading fails
-            this.childList = [];
+            this.rejectList  = [];   //List of functions to be called when loading fails
+            this.childList   = [];
+            this.messages          = {};
+            this.messagesByShortId = {};
         },
 
 		/*************************************************
