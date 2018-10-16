@@ -63,8 +63,8 @@
         window.Niord.options.vfFormatId.date_weekday = 'TEST_DATE_WEEKDAY';
         window.Niord.options.normalModalExtendable = true;
 
-        window.Niord.options.createMap = function($element, geoJSONList){
-            $element.text('Antal geoJSON = ' + geoJSONList.length);
+        window.Niord.options.createMap = function($element, message){
+            $element.text('Antal geoJSON = ' + message.title.da);
 
             //function to create a map inside $element and displaying the geoJSONs in geoJSONList
         };
