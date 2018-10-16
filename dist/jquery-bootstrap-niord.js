@@ -64,7 +64,7 @@
         normalModalExtendable: false, //Boolean or function. If true the mormal modal can extend to a version with map and inlined attachments. Typical on desktops
 
 
-        createMap: null, //function($element, message): function to create a map inside $element and displaying the geoJSONs in geoJSONList
+        createMap: null, //function($element, message): function to create a map inside $element and displaying the message.geoJSON
 
         isSet: function( id ){
             var value = ns.options[id];
@@ -272,16 +272,6 @@
             func( obj, _this );
         });
     };
-    ns.Message.prototype.hasGeometry = function(){
-        var result = false;
-        $.each( this.parts, function( id, part ){
-            if (part.geometry){
-                result = true;
-                return false;
-            }
-        });
-        return result;
-    };
 
     /******************************************************
     Message.bsAccordionOptions
@@ -342,7 +332,7 @@
             switch (partId){
                 //****************************
                 case 'MAP':
-                    if (ns.options.createMap && _this.hasGeometry()){
+                    if (ns.options.createMap && _this.geoJSON){
                         addPart = true;
                         bsPart.content = $('<div/>');
                         ns.options.createMap( bsPart.content, _this );

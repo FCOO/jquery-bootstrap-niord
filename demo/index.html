@@ -64,7 +64,7 @@
         window.Niord.options.normalModalExtendable = true;
 
         window.Niord.options.createMap = function($element, message){
-            $element.text('Antal geoJSON = ' + message.title.da);
+            $element.text('Antal geoJSON = ' + message.geoJSON.features.length);
 
             //function to create a map inside $element and displaying the geoJSONs in geoJSONList
         };
@@ -182,6 +182,8 @@
 
 
         window.Niord.getMessages('', display);
+
+
 	</script>
 </body>
 </html>
