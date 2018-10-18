@@ -64,7 +64,7 @@
         normalModalExtendable: false, //Boolean or function. If true the mormal modal can extend to a version with map and inlined attachments. Typical on desktops
 
 
-        createMap: null, //function($element, message): function to create a map inside $element and displaying the message.geoJSON
+        createMap: null, //function($element, message, options): function to create a map inside $element and displaying the message.geoJSON
 
         isSet: function( id ){
             var value = ns.options[id];
@@ -335,7 +335,7 @@
                     if (ns.options.createMap && _this.geoJSON){
                         addPart = true;
                         bsPart.content = $('<div/>');
-                        ns.options.createMap( bsPart.content, _this );
+                        ns.options.createMap( bsPart.content, _this, options );
                     }
                     break;
 
