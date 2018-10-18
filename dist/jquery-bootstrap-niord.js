@@ -154,25 +154,30 @@
         size = size ? size.toUpperCase() : 'SMALL';
         var fixedContentTextClass     = 'd-block text-center',
             fixedContentBoldTextClass = fixedContentTextClass + ' font-weight-bold',
+            tempResult = [],
             result = [];
         switch (size){
             case 'SMALL':
-                result.push(
+                tempResult.push(
                     {text: this.subAreaTitle, textClass: fixedContentTextClass},
                     {text: this.shortTitle,   textClass: fixedContentBoldTextClass}
                 );
                 break;
             case 'NORMAL':
-                result.push(
+                tempResult.push(
                     {text: this.areaTitle,    textClass: fixedContentTextClass},
                     {text: this.subAreaTitle, textClass: fixedContentTextClass},
                     {text: this.shortTitle,   textClass: fixedContentBoldTextClass}
                 );
                 break;
             case 'LARGE':
-                result.push({text: this.title, textClass: fixedContentBoldTextClass});
+                tempResult.push({text: this.title, textClass: fixedContentBoldTextClass});
                 break;
         }
+        $.each( tempResult, function( index, obj ){
+            if (obj.text)
+                result.push(obj);
+        });
         return result;
     };
 
