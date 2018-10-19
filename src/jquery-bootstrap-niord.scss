@@ -35,6 +35,7 @@ $time-color-future: #4D72B8;
         margin: 0;
     }
     table {
+        word-break: normal;
         tr {
             th { vertical-align: bottom; }
             td { vertical-align: top;    }

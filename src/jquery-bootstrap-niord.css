@@ -11,15 +11,15 @@
 .niord-modal-content p, .niord-modal-content ul {
   margin: 0; }
 
-.niord-modal-content table tr th {
-  vertical-align: bottom; }
-
-.niord-modal-content table tr td {
-  vertical-align: top; }
-
-.niord-modal-content table:not([class]) td {
-  border: 1px solid #999;
-  padding: 3px; }
+.niord-modal-content table {
+  word-break: normal; }
+  .niord-modal-content table tr th {
+    vertical-align: bottom; }
+  .niord-modal-content table tr td {
+    vertical-align: top; }
+  .niord-modal-content table:not([class]) td {
+    border: 1px solid #999;
+    padding: 3px; }
 
 .niord-modal-content hr {
   margin-top: 3px;
