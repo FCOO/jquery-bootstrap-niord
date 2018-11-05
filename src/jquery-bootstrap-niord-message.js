@@ -541,7 +541,8 @@
                     list = bsPart.content.content;
 
                     if (_this.publications){
-                        var hr = {da:'', en:''};
+                        var hr = {da:'', en:''},
+                            addHr = false;
                         $.each( _this.publications, function( id, publication ){
                             if (publication.text.da) hr.da = '<hr>';
                             if (publication.text.en) hr.en = '<hr>';
@@ -549,8 +550,10 @@
                                 text: publication.text,
                                 link: function(){ $.bsModalFile( publication.link, {  header: publication.text } ); }
                             });
+                            addHr = true;
                         });
-                        list.push(hr);
+                        if (addHr)
+                            list.push(hr);
                     }
                     list.push({text: 'niord:publications', link: $.proxy(ns.publications.show, ns.publications) });
 

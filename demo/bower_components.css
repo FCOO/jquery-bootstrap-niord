@@ -11494,10 +11494,16 @@ FONTAWESOME
 Additions and adjustments to Fontawesome 5 (when included)
 ************************************************************/
 .fa-inside-circle {
-  font-size: .65em; }
+  position: relative;
+  top: -.1em; }
+  .fa-inside-circle:before {
+    font-size: .65em; }
 
 .fa-inside-circle2 {
-  font-size: .55em; }
+  position: relative;
+  top: -.2em; }
+  .fa-inside-circle2:before {
+    font-size: .55em; }
 
 /************************************************
 STYLE FOR DIFFERENT ELEMENTS
@@ -11531,8 +11537,39 @@ Bootstrap allready have the following classes
 .font-italic
 
 */
-.container-icon-and-text:not(.fa-stack) > *:not(:first-child) {
-  padding-left: 0.3em; }
+.container-icon-and-text:not(.fa-stack) > span:not(:last-child),
+.container-icon-and-text:not(.fa-stack) > .container-stacked-icons:not(:last-child):not(.fa-no-margin),
+.container-icon-and-text:not(.fa-stack) > i:not(:last-child):not(.fa-no-margin) {
+  margin-right: .4em; }
+
+.container-icon-and-text:not(.fa-stack) > span.inline-block,
+.container-icon-and-text:not(.fa-stack) > span.d-block {
+  margin-right: inherit; }
+
+.container-icon-and-text:not(.fa-stack) * {
+  margin-top: 0;
+  margin-bottom: 0; }
+
+.container-icon-and-text:not(.fa-stack) ol, .container-icon-and-text:not(.fa-stack) ul, .container-icon-and-text:not(.fa-stack) dl {
+  padding-left: 2em; }
+
+.container-stacked-icons {
+  text-align: center;
+  display: inline-block;
+  line-height: 1; }
+  .container-stacked-icons .stacked-icon {
+    width: 1em; }
+    .container-stacked-icons .stacked-icon:not(:first-child) {
+      margin-left: -1em; }
+
+/************************************************************
+Modernizr-test for stacted icon with parent with class="active" when selected
+************************************************************/
+.active .container-stacked-icons i.icon-hide-for-active {
+  opacity: inherit; }
+
+.no-active .container-stacked-icons i.icon-show-for-active {
+  opacity: 0; }
 
 /************************************************************
 BUTTON
@@ -11694,11 +11731,30 @@ div.btn, div.list-group-item {
     background-color: #007bff; }
     .mouse-hover .allow-zero-selected .btn.btn-standard.allow-zero-selected.active:hover {
       background-color: #006fe6; }
+  html.mouse-hover .btn.btn-standard.allow-zero-selected.active:hover {
+    background: #006fe6; }
+  .btn.btn-standard.allow-zero-selected.active {
+    color: #fff; }
+    .btn.btn-standard.allow-zero-selected.active:active, .btn.btn-standard.allow-zero-selected.active.active {
+      color: #e6e5e5; }
+    .btn.btn-standard.allow-zero-selected.active:focus, .btn.btn-standard.allow-zero-selected.active.focus {
+      color: #fff; }
+    .btn.btn-standard.allow-zero-selected.active.disabled, .btn.btn-standard.allow-zero-selected.active:disabled {
+      color: #fff; }
+    .mouse-hover .hover .btn.btn-standard.allow-zero-selected.active:not(:focus):not(:disabled):not(.disabled),
+    .mouse-hover .btn.btn-standard.allow-zero-selected.active.hover:not(:focus):not(:disabled):not(.disabled),
+    .mouse-hover .btn.btn-standard.allow-zero-selected.active:hover:not(:focus):not(:disabled):not(.disabled) {
+      color: #fff; }
   .btn.btn-standard > i.fa {
     min-width: 1em;
     text-align: left; }
     .btn.btn-standard > i.fa:only-child {
       text-align: center; }
+  .btn.btn-standard > span.fa-stack {
+    width: 1em;
+    height: 1em;
+    line-height: 1.21875rem;
+    vertical-align: top; }
   .btn.btn-standard.transparent {
     background-color: transparent;
     color: #D4D4D4;
@@ -11754,26 +11810,14 @@ div.btn, div.list-group-item {
 /************************************************************
 Modernizr-test for elements with class="active" when selected
 ************************************************************/
-.btn.active .show-for-active {
-  display: true; }
-
 .btn.active .hide-for-active {
   display: none !important; }
-
-.btn.active .hide-for-no-active {
-  display: true; }
 
 .btn.active .show-for-no-active {
   display: none !important; }
 
-.btn.no-active .hide-for-active {
-  display: true; }
-
 .btn.no-active .show-for-active {
   display: none !important; }
-
-.btn.no-active .show-for-no-active {
-  display: true; }
 
 .btn.no-active .hide-for-no-active {
   display: none !important; }
@@ -11890,6 +11934,9 @@ POPOVER
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap; }
+  .popover .popover-header-content span.fixed-header {
+    overflow: visible;
+    word-break: keep-all; }
 
 .popover .popover-body {
   padding: 1px !important; }
@@ -11913,6 +11960,9 @@ POPOVER
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap; }
+  .popover .popover-footer span.fixed-header {
+    overflow: visible;
+    word-break: keep-all; }
   .popover .popover-footer:empty {
     display: none; }
 
@@ -11932,6 +11982,9 @@ POPOVER
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap; }
+  .popover.popover-sm .popover-header-content span.fixed-header {
+    overflow: visible;
+    word-break: keep-all; }
 
 .popover.popover-sm .popover-footer {
   font-weight: 400;
@@ -11952,6 +12005,9 @@ POPOVER
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap; }
+  .popover.popover-sm .popover-footer span.fixed-header {
+    overflow: visible;
+    word-break: keep-all; }
   .popover.popover-sm .popover-footer:empty {
     display: none; }
 
@@ -11979,6 +12035,8 @@ Icons for modal header inside a container
     width: 1em;
     line-height: 1em; }
   .header-icon-container .header-icon {
+    width: 1em;
+    text-align: center;
     color: #000;
     text-shadow: 0 1px 0 #fff;
     opacity: .5;
@@ -11987,22 +12045,28 @@ Icons for modal header inside a container
       opacity: .25; }
     .header-icon-container .header-icon.hidden {
       display: none; }
-    .header-icon-container .header-icon .show-for-hover {
-      display: none; }
     .header-icon-container .header-icon:not(.disabled):hover {
       color: #000;
       text-decoration: none;
       opacity: .75; }
-      .header-icon-container .header-icon:not(.disabled):hover .show-for-hover {
-        display: inherit; }
-      .header-icon-container .header-icon:not(.disabled):hover .hide-for-hover {
-        display: none; }
       .header-icon-container .header-icon:not(.disabled):hover:active {
         opacity: .9; }
+    .header-icon-container .header-icon.header-icon-close .back {
+      opacity: 0;
+      color: white; }
+    .header-icon-container .header-icon.header-icon-close .front {
+      opacity: 0;
+      color: #dc3545; }
     .header-icon-container .header-icon.header-icon-close:not(.disabled):hover {
       opacity: .9; }
       .header-icon-container .header-icon.header-icon-close:not(.disabled):hover:active {
         opacity: 1; }
+      .header-icon-container .header-icon.header-icon-close:not(.disabled):hover .back {
+        opacity: inherit; }
+      .header-icon-container .header-icon.header-icon-close:not(.disabled):hover .middle {
+        opacity: 0; }
+      .header-icon-container .header-icon.header-icon-close:not(.disabled):hover .front {
+        opacity: inherit; }
 
 /**************************************************
 CHECKBOX
@@ -12353,6 +12417,9 @@ html.no-mouse-hover .selectList .dropdown-item.active {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap; }
+  .selectList .dropdown-header span.fixed-header {
+    overflow: visible;
+    word-break: keep-all; }
 
 .selectList.selectList-sm .dropdown-item {
   padding: 0.25rem 0.25rem;
@@ -12374,6 +12441,9 @@ html.no-mouse-hover .selectList .dropdown-item.active {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap; }
+  .selectList.selectList-sm .dropdown-header span.fixed-header {
+    overflow: visible;
+    word-break: keep-all; }
 
 .selectList.selectList-xs .dropdown-item {
   padding: 0.125rem 0.125rem;
@@ -12394,6 +12464,9 @@ html.no-mouse-hover .selectList .dropdown-item.active {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap; }
+  .selectList.selectList-xs .dropdown-header span.fixed-header {
+    overflow: visible;
+    word-break: keep-all; }
 
 /************************************************************
 MODAL
@@ -12445,8 +12518,9 @@ body.modal-open .modal {
     max-height: inherit; }
   .modal-dialog .modal-content {
     min-height: 100%;
-    -ms-word-break: break-all;
-    overflow-wrap: break-word; }
+    -ms-word-break: break-word;
+    word-break: break-word;
+    word-wrap: break-word; }
   .modal-dialog:not(.modal-flex-width) .modal-content .modal-body > .jquery-scroll-container {
     width: calc( 100% - 2*1px - 2*0.625rem);
     margin-left: auto;
@@ -12463,6 +12537,11 @@ body.modal-open .modal {
     display: none !important; }
   .modal-dialog .modal-content:not(.modal-fixed-height).no-modal-extended:not(.modal-content-always-max-height), .modal-dialog .modal-content:not(.modal-fixed-height).modal-extended:not(.modal-extended-content-always-max-height) {
     height: auto !important; }
+  .modal-dialog .modal-content .modal-body p {
+    margin: 0; }
+  .modal-dialog .modal-content .modal-body ol, .modal-dialog .modal-content .modal-body ul, .modal-dialog .modal-content .modal-body dl {
+    margin: 0;
+    padding-left: 2em; }
   .modal-dialog .modal-content .modal-body.modal-body-no-content {
     display: none; }
   .modal-dialog .modal-content .modal-body.modal-body-always-max-height {
@@ -12494,6 +12573,9 @@ body.modal-open .modal {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap; }
+    .modal-dialog .modal-content .modal-header span.fixed-header {
+      overflow: visible;
+      word-break: keep-all; }
     .modal-dialog .modal-content .modal-header.clickable {
       cursor: default; }
       .modal-dialog .modal-content .modal-header.clickable:hover {
@@ -12556,6 +12638,9 @@ body.modal-open .modal {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap; }
+    .modal-dialog .modal-content .modal-footer-header span.fixed-header {
+      overflow: visible;
+      word-break: keep-all; }
     .modal-dialog .modal-content .modal-footer-header:empty {
       display: none; }
     .modal-dialog .modal-content .modal-footer-header:not(:empty) + .modal-footer {
@@ -12591,6 +12676,9 @@ body.modal-open .modal {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap; }
+    .modal-dialog.modal-dialog-sm .modal-content .modal-header span.fixed-header {
+      overflow: visible;
+      word-break: keep-all; }
   .modal-dialog.modal-dialog-sm .modal-content .modal-body,
   .modal-dialog.modal-dialog-sm .modal-content .modal-body-fixed {
     padding: 0.25rem 0.25rem;
@@ -12614,6 +12702,9 @@ body.modal-open .modal {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap; }
+    .modal-dialog.modal-dialog-sm .modal-content .modal-footer-header span.fixed-header {
+      overflow: visible;
+      word-break: keep-all; }
     .modal-dialog.modal-dialog-sm .modal-content .modal-footer-header:empty {
       display: none; }
   .modal-dialog.modal-dialog-xs .modal-content .modal-header {
@@ -12632,10 +12723,13 @@ body.modal-open .modal {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap; }
+    .modal-dialog.modal-dialog-xs .modal-content .modal-header span.fixed-header {
+      overflow: visible;
+      word-break: keep-all; }
   .modal-dialog.modal-dialog-xs .modal-content .modal-body,
   .modal-dialog.modal-dialog-xs .modal-content .modal-body-fixed {
     padding: 0.25rem 0.25rem;
-    font-size: 0.8125rem; }
+    font-size: 0.75rem; }
   .modal-dialog.modal-dialog-xs .modal-content .modal-footer-header {
     font-weight: 400;
     display: flex;
@@ -12655,6 +12749,9 @@ body.modal-open .modal {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap; }
+    .modal-dialog.modal-dialog-xs .modal-content .modal-footer-header span.fixed-header {
+      overflow: visible;
+      word-break: keep-all; }
     .modal-dialog.modal-dialog-xs .modal-content .modal-footer-header:empty {
       display: none; }
   .modal-dialog.modal-dialog-xs .modal-content .modal-footer {
@@ -12728,6 +12825,9 @@ Style for elements used to display any file in a modal-window
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap; }
+  .file-view-header span.fixed-header {
+    overflow: visible;
+    word-break: keep-all; }
 
 .file-view-content {
   padding: 0.25rem 0.25rem;
@@ -13058,6 +13158,7 @@ Adjustmernt to Bootstrap table
 ************************************************************/
 .table {
   margin-bottom: 0;
+  word-break: normal;
   /*************************************
     Header
     *************************************/
@@ -13113,6 +13214,9 @@ Adjustmernt to Bootstrap table
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap; }
+    .table thead tr th span.fixed-header {
+      overflow: visible;
+      word-break: keep-all; }
     .table thead tr th.no-horizontal-padding {
       padding-left: 0;
       padding-right: 0; }
@@ -13197,6 +13301,10 @@ Adjustmernt to Bootstrap table
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap; }
+  .modal-dialog-sm .table thead tr th span.fixed-header,
+  .table.table-sm thead tr th span.fixed-header {
+    overflow: visible;
+    word-break: keep-all; }
   .modal-dialog-sm .table thead tr th.sortable,
   .table.table-sm thead tr th.sortable {
     padding-right: 1em; }
@@ -13270,6 +13378,9 @@ Using Bootstrap Collapse to create accordion
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap; }
+    .accordion .card-header span.fixed-header {
+      overflow: visible;
+      word-break: keep-all; }
     .accordion .card-header .chevrolet {
       font-size: 0.8em;
       color: #000;
@@ -13307,6 +13418,9 @@ Using Bootstrap Collapse to create accordion
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap; }
+    .accordion .card-footer span.fixed-header {
+      overflow: visible;
+      word-break: keep-all; }
     .accordion .card-footer:empty {
       display: none; }
   .accordion.no-transition .collapsing,
@@ -13345,6 +13459,11 @@ Using Bootstrap Collapse to create accordion
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap; }
+  .modal-dialog-sm .accordion .card-header span.fixed-header,
+  .modal-dialog-xs .accordion .card-header span.fixed-header,
+  .accordion-sm .card-header span.fixed-header {
+    overflow: visible;
+    word-break: keep-all; }
 
 .modal-dialog-sm .accordion .card-block,
 .modal-dialog-xs .accordion .card-block,
@@ -13375,6 +13494,11 @@ Using Bootstrap Collapse to create accordion
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap; }
+  .modal-dialog-sm .accordion .card-footer span.fixed-header,
+  .modal-dialog-xs .accordion .card-footer span.fixed-header,
+  .accordion-sm .card-footer span.fixed-header {
+    overflow: visible;
+    word-break: keep-all; }
   .modal-dialog-sm .accordion .card-footer:empty,
   .modal-dialog-xs .accordion .card-footer:empty,
   .accordion-sm .card-footer:empty {
@@ -13482,9 +13606,10 @@ for noty is copyed and modified
       font-size: 1rem;
       font-size: 0.8125rem; }
       .noty_bar.noty_theme__jquery-bootstrap .noty_body * {
-        -ms-word-break: break-all;
         white-space: pre-wrap;
-        overflow-wrap: break-word; }
+        -ms-word-break: break-word;
+        word-break: break-word;
+        word-wrap: break-word; }
     .noty_bar.noty_theme__jquery-bootstrap.no-header .header-icon-container {
       position: absolute;
       top: 0;
@@ -13512,6 +13637,9 @@ for noty is copyed and modified
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap; }
+    .noty_bar .noty-header span.fixed-header {
+      overflow: visible;
+      word-break: keep-all; }
     .noty_bar .noty-header.noty-header-sm {
       font-weight: 400;
       display: flex;
@@ -13528,6 +13656,9 @@ for noty is copyed and modified
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap; }
+      .noty_bar .noty-header.noty-header-sm span.fixed-header {
+        overflow: visible;
+        word-break: keep-all; }
   .noty_bar.noty_close_with_click:hover .noty-header {
     background-color: #e5e5e5; }
   .noty_bar hr {
@@ -13552,6 +13683,9 @@ for noty is copyed and modified
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap; }
+    .noty_bar .noty-footer span.fixed-header {
+      overflow: visible;
+      word-break: keep-all; }
     .noty_bar .noty-footer:empty {
       display: none; }
   .noty_bar .noty-buttons {
@@ -13851,6 +13985,9 @@ Adjustment to Bootstrap tabs
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap; }
+    .tab-content .tab-pane.active .tab-footer span.fixed-header {
+      overflow: visible;
+      word-break: keep-all; }
     .tab-content .tab-pane.active .tab-footer:empty {
       display: none; }
     .tab-content .tab-pane.active .tab-footer:empty {
@@ -13872,6 +14009,9 @@ Adjustment to Bootstrap tabs
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap; }
+  .tab-content.tab-content-sm .tab-pane .tab-footer span.fixed-header {
+    overflow: visible;
+    word-break: keep-all; }
 
 .modal-dialog .tab-content .tab-pane {
   min-height: 100%;
@@ -13993,6 +14133,9 @@ https://github.com/berkan52/select2-bootstrap4-theme
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap; }
+    .select2-container--standard .select2-results__group span.fixed-header {
+      overflow: visible;
+      word-break: keep-all; }
   .select2-container--standard.select2-container--focus .select2-selection, .select2-container--standard.select2-container--open .select2-selection {
     border-color: #80bdff !important;
     outline: none !important; }
@@ -14057,6 +14200,9 @@ https://github.com/berkan52/select2-bootstrap4-theme
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap; }
+    .select2-container--standard.select2-container-sm .select2-results__group span.fixed-header {
+      overflow: visible;
+      word-break: keep-all; }
   .select2-container--standard.select2-container-xs .select2-results {
     max-height: 5.5rem; }
   .select2-container--standard.select2-container-xs .select2-selection,
@@ -14081,6 +14227,9 @@ https://github.com/berkan52/select2-bootstrap4-theme
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap; }
+    .select2-container--standard.select2-container-xs .select2-results__group span.fixed-header {
+      overflow: visible;
+      word-break: keep-all; }
 
 .input-group > .has-float-label:not(:first-child) .select2-container--standard .select2-selection {
   border-top-left-radius: 0;

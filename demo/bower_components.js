@@ -17599,7 +17599,7 @@ var Translator = function (_EventEmitter) {
       // interpolate
       var data = options.replace && typeof options.replace !== 'string' ? options.replace : options;
       if (this.options.interpolation.defaultVariables) data = _extends({}, this.options.interpolation.defaultVariables, data);
-      res = this.interpolator.interpolate(res, data, options.lng || this.language);
+      res = this.interpolator.interpolate(res, data, options.lng || this.language, options);
 
       // nesting
       if (options.nest !== false) res = this.interpolator.nest(res, function () {
@@ -17822,7 +17822,7 @@ var LanguageUtil = function () {
 
 // definition http://translate.sourceforge.net/wiki/l10n/pluralforms
 /* eslint-disable */
-var sets = [{ lngs: ['ach', 'ak', 'am', 'arn', 'br', 'fil', 'gun', 'ln', 'mfe', 'mg', 'mi', 'oc', 'pt', 'pt-BR', 'tg', 'ti', 'tr', 'uz', 'wa'], nr: [1, 2], fc: 1 }, { lngs: ['af', 'an', 'ast', 'az', 'bg', 'bn', 'ca', 'da', 'de', 'dev', 'el', 'en', 'eo', 'es', 'et', 'eu', 'fi', 'fo', 'fur', 'fy', 'gl', 'gu', 'ha', 'he', 'hi', 'hu', 'hy', 'ia', 'it', 'kn', 'ku', 'lb', 'mai', 'ml', 'mn', 'mr', 'nah', 'nap', 'nb', 'ne', 'nl', 'nn', 'no', 'nso', 'pa', 'pap', 'pms', 'ps', 'pt-PT', 'rm', 'sco', 'se', 'si', 'so', 'son', 'sq', 'sv', 'sw', 'ta', 'te', 'tk', 'ur', 'yo'], nr: [1, 2], fc: 2 }, { lngs: ['ay', 'bo', 'cgg', 'fa', 'id', 'ja', 'jbo', 'ka', 'kk', 'km', 'ko', 'ky', 'lo', 'ms', 'sah', 'su', 'th', 'tt', 'ug', 'vi', 'wo', 'zh'], nr: [1], fc: 3 }, { lngs: ['be', 'bs', 'dz', 'hr', 'ru', 'sr', 'uk'], nr: [1, 2, 5], fc: 4 }, { lngs: ['ar'], nr: [0, 1, 2, 3, 11, 100], fc: 5 }, { lngs: ['cs', 'sk'], nr: [1, 2, 5], fc: 6 }, { lngs: ['csb', 'pl'], nr: [1, 2, 5], fc: 7 }, { lngs: ['cy'], nr: [1, 2, 3, 8], fc: 8 }, { lngs: ['fr'], nr: [1, 2], fc: 9 }, { lngs: ['ga'], nr: [1, 2, 3, 7, 11], fc: 10 }, { lngs: ['gd'], nr: [1, 2, 3, 20], fc: 11 }, { lngs: ['is'], nr: [1, 2], fc: 12 }, { lngs: ['jv'], nr: [0, 1], fc: 13 }, { lngs: ['kw'], nr: [1, 2, 3, 4], fc: 14 }, { lngs: ['lt'], nr: [1, 2, 10], fc: 15 }, { lngs: ['lv'], nr: [1, 2, 0], fc: 16 }, { lngs: ['mk'], nr: [1, 2], fc: 17 }, { lngs: ['mnk'], nr: [0, 1, 2], fc: 18 }, { lngs: ['mt'], nr: [1, 2, 11, 20], fc: 19 }, { lngs: ['or'], nr: [2, 1], fc: 2 }, { lngs: ['ro'], nr: [1, 2, 20], fc: 20 }, { lngs: ['sl'], nr: [5, 1, 2, 3], fc: 21 }];
+var sets = [{ lngs: ['ach', 'ak', 'am', 'arn', 'br', 'fil', 'gun', 'ln', 'mfe', 'mg', 'mi', 'oc', 'pt', 'pt-BR', 'tg', 'ti', 'tr', 'uz', 'wa'], nr: [1, 2], fc: 1 }, { lngs: ['af', 'an', 'ast', 'az', 'bg', 'bn', 'ca', 'da', 'de', 'dev', 'el', 'en', 'eo', 'es', 'et', 'eu', 'fi', 'fo', 'fur', 'fy', 'gl', 'gu', 'ha', 'hi', 'hu', 'hy', 'ia', 'it', 'kn', 'ku', 'lb', 'mai', 'ml', 'mn', 'mr', 'nah', 'nap', 'nb', 'ne', 'nl', 'nn', 'no', 'nso', 'pa', 'pap', 'pms', 'ps', 'pt-PT', 'rm', 'sco', 'se', 'si', 'so', 'son', 'sq', 'sv', 'sw', 'ta', 'te', 'tk', 'ur', 'yo'], nr: [1, 2], fc: 2 }, { lngs: ['ay', 'bo', 'cgg', 'fa', 'id', 'ja', 'jbo', 'ka', 'kk', 'km', 'ko', 'ky', 'lo', 'ms', 'sah', 'su', 'th', 'tt', 'ug', 'vi', 'wo', 'zh'], nr: [1], fc: 3 }, { lngs: ['be', 'bs', 'dz', 'hr', 'ru', 'sr', 'uk'], nr: [1, 2, 5], fc: 4 }, { lngs: ['ar'], nr: [0, 1, 2, 3, 11, 100], fc: 5 }, { lngs: ['cs', 'sk'], nr: [1, 2, 5], fc: 6 }, { lngs: ['csb', 'pl'], nr: [1, 2, 5], fc: 7 }, { lngs: ['cy'], nr: [1, 2, 3, 8], fc: 8 }, { lngs: ['fr'], nr: [1, 2], fc: 9 }, { lngs: ['ga'], nr: [1, 2, 3, 7, 11], fc: 10 }, { lngs: ['gd'], nr: [1, 2, 3, 20], fc: 11 }, { lngs: ['is'], nr: [1, 2], fc: 12 }, { lngs: ['jv'], nr: [0, 1], fc: 13 }, { lngs: ['kw'], nr: [1, 2, 3, 4], fc: 14 }, { lngs: ['lt'], nr: [1, 2, 10], fc: 15 }, { lngs: ['lv'], nr: [1, 2, 0], fc: 16 }, { lngs: ['mk'], nr: [1, 2], fc: 17 }, { lngs: ['mnk'], nr: [0, 1, 2], fc: 18 }, { lngs: ['mt'], nr: [1, 2, 11, 20], fc: 19 }, { lngs: ['or'], nr: [2, 1], fc: 2 }, { lngs: ['ro'], nr: [1, 2, 20], fc: 20 }, { lngs: ['sl'], nr: [5, 1, 2, 3], fc: 21 }, { lngs: ['he'], nr: [1, 2, 20, 21], fc: 22 }];
 
 var _rulesPluralsTypes = {
   1: function _(n) {
@@ -17887,6 +17887,9 @@ var _rulesPluralsTypes = {
   },
   21: function _(n) {
     return Number(n % 100 == 1 ? 1 : n % 100 == 2 ? 2 : n % 100 == 3 || n % 100 == 4 ? 3 : 0);
+  },
+  22: function _(n) {
+    return Number(n === 1 ? 0 : n === 2 ? 1 : (n < 0 || n > 10) && n % 10 == 0 ? 2 : 3);
   }
 };
 /* eslint-enable */
@@ -18057,7 +18060,7 @@ var Interpolator = function () {
     this.nestingRegexp = new RegExp(nestingRegexpStr, 'g');
   };
 
-  Interpolator.prototype.interpolate = function interpolate(str, data, lng) {
+  Interpolator.prototype.interpolate = function interpolate(str, data, lng, options) {
     var _this = this;
 
     var match = void 0;
@@ -18080,6 +18083,8 @@ var Interpolator = function () {
 
     this.resetRegExp();
 
+    var missingInterpolationHandler = options && options.missingInterpolationHandler || this.options.missingInterpolationHandler;
+
     replaces = 0;
     // unescape if has unescapePrefix/Suffix
     /* eslint no-cond-assign: 0 */
@@ -18098,8 +18103,8 @@ var Interpolator = function () {
     while (match = this.regexp.exec(str)) {
       value = handleFormat(match[1].trim());
       if (value === undefined) {
-        if (typeof this.options.missingInterpolationHandler === 'function') {
-          var temp = this.options.missingInterpolationHandler(str, match);
+        if (typeof missingInterpolationHandler === 'function') {
+          var temp = missingInterpolationHandler(str, match);
           value = typeof temp === 'string' ? temp : '';
         } else {
           this.logger.warn('missed to pass in variable ' + match[1] + ' for interpolating ' + str);
@@ -31450,7 +31455,7 @@ if (typeof define === 'function' && define.amd) {
 
 ****************************************************************************/
 
-(function ($/*, window, document, undefined*/) {
+(function ($, window, document, undefined) {
     "use strict";
 
     var globalCheckboxId = 0;
@@ -31706,7 +31711,7 @@ if (typeof define === 'function' && define.amd) {
                 options.context = this;
                 $child.data('cbx_options', options);
             }
-            if (this.options.selectedId){
+            if (this.options.selectedId != undefined){
                 var _this = this,
                     list = $.grep(this._cbxChildList, function($elem){ return $elem.data('cbx_options').id == _this.options.selectedId; });
                 if (list.length){
@@ -40396,7 +40401,7 @@ module.exports = function (element) {
 }).call(this);
 ;
 //! moment-timezone.js
-//! version : 0.5.17
+//! version : 0.5.23
 //! Copyright (c) JS Foundation and other contributors
 //! license : MIT
 //! github.com/moment/moment-timezone
@@ -40405,10 +40410,10 @@ module.exports = function (element) {
 	"use strict";
 
 	/*global define*/
-	if (typeof define === 'function' && define.amd) {
-		define(['moment'], factory);                 // AMD
-	} else if (typeof module === 'object' && module.exports) {
+	if (typeof module === 'object' && module.exports) {
 		module.exports = factory(require('moment')); // Node
+	} else if (typeof define === 'function' && define.amd) {
+		define(['moment'], factory);                 // AMD
 	} else {
 		factory(root.moment);                        // Browser
 	}
@@ -40421,14 +40426,18 @@ module.exports = function (element) {
 	// 	return moment;
 	// }
 
-	var VERSION = "0.5.17",
+	var VERSION = "0.5.23",
 		zones = {},
 		links = {},
 		names = {},
 		guesses = {},
-		cachedGuess,
+		cachedGuess;
 
-		momentVersion = moment.version.split('.'),
+	if (!moment || typeof moment.version !== 'string') {
+		logError('Moment Timezone requires Moment.js. See https://momentjs.com/timezone/docs/#/use-it/browser/');
+	}
+
+	var momentVersion = moment.version.split('.'),
 		major = +momentVersion[0],
 		minor = +momentVersion[1];
 
@@ -40790,6 +40799,7 @@ module.exports = function (element) {
 	}
 
 	function getZone (name, caller) {
+		
 		name = normalizeName(name);
 
 		var zone = zones[name];
@@ -40948,6 +40958,9 @@ module.exports = function (element) {
 
 	fn.tz = function (name, keepTime) {
 		if (name) {
+			if (typeof name !== 'string') {
+				throw new Error('Time zone name must be a string, got ' + name + ' [' + typeof name + ']');
+			}
 			this._z = getZone(name);
 			if (this._z) {
 				moment.updateOffset(this, keepTime);
@@ -40997,7 +41010,7 @@ module.exports = function (element) {
 	}
 
 	loadData({
-		"version": "2018e",
+		"version": "2018g",
 		"zones": [
 			"Africa/Abidjan|GMT|0|0||48e5",
 			"Africa/Nairobi|EAT|-30|0||47e5",
@@ -41005,7 +41018,7 @@ module.exports = function (element) {
 			"Africa/Lagos|WAT|-10|0||17e6",
 			"Africa/Maputo|CAT|-20|0||26e5",
 			"Africa/Cairo|EET EEST|-20 -30|01010|1M2m0 gL0 e10 mn0|15e6",
-			"Africa/Casablanca|WET WEST|0 -10|0101010101010101010101010101010101010101010|1H3C0 wM0 co0 go0 1o00 s00 dA0 vc0 11A0 A00 e00 y00 11A0 uM0 e00 Dc0 11A0 s00 e00 IM0 WM0 mo0 gM0 LA0 WM0 jA0 e00 Rc0 11A0 e00 e00 U00 11A0 8o0 e00 11A0 11A0 5A0 e00 17c0 1fA0 1a00|32e5",
+			"Africa/Casablanca|+00 +01|0 -10|0101010101010101010101010101|1H3C0 wM0 co0 go0 1o00 s00 dA0 vc0 11A0 A00 e00 y00 11A0 uM0 e00 Dc0 11A0 s00 e00 IM0 WM0 mo0 gM0 LA0 WM0 jA0 e00|32e5",
 			"Europe/Paris|CET CEST|-10 -20|01010101010101010101010|1GNB0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0|11e6",
 			"Africa/Johannesburg|SAST|-20|0||84e5",
 			"Africa/Khartoum|EAT CAT|-30 -20|01|1Usl0|51e5",
@@ -41045,7 +41058,7 @@ module.exports = function (element) {
 			"America/Noronha|-02|20|0||30e2",
 			"America/Port-au-Prince|EST EDT|50 40|010101010101010101010|1GI70 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 3iN0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0|23e5",
 			"Antarctica/Palmer|-03 -04|30 40|010101010|1H3D0 Op0 1zb0 Rd0 1wn0 Rd0 46n0 Ap0|40",
-			"America/Santiago|-03 -04|30 40|010101010101010101010|1H3D0 Op0 1zb0 Rd0 1wn0 Rd0 46n0 Ap0 1Nb0 Ap0 1Nb0 Ap0 1Nb0 Ap0 1Nb0 Ap0 1Nb0 Dd0 1Nb0 Ap0|62e5",
+			"America/Santiago|-03 -04|30 40|010101010101010101010|1H3D0 Op0 1zb0 Rd0 1wn0 Rd0 46n0 Ap0 1Nb0 Ap0 1Nb0 Ap0 1zb0 11B0 1nX0 11B0 1nX0 11B0 1nX0 11B0|62e5",
 			"America/Sao_Paulo|-02 -03|20 30|01010101010101010101010|1GCq0 1zd0 Lz0 1C10 Lz0 1C10 On0 1zd0 On0 1zd0 On0 1zd0 On0 1HB0 FX0 1HB0 FX0 1HB0 IL0 1HB0 FX0 1HB0|20e6",
 			"Atlantic/Azores|-01 +00|10 0|01010101010101010101010|1GNB0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0|25e4",
 			"America/St_Johns|NST NDT|3u 2u|01010101010101010101010|1GI5u 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0|11e4",
@@ -41064,7 +41077,7 @@ module.exports = function (element) {
 			"Asia/Bangkok|+07|-70|0||15e6",
 			"Asia/Barnaul|+07 +06|-70 -60|010|1N7v0 3rd0",
 			"Asia/Beirut|EET EEST|-20 -30|01010101010101010101010|1GNy0 1qL0 11B0 1nX0 11B0 1nX0 11B0 1nX0 11B0 1qL0 WN0 1qL0 WN0 1qL0 11B0 1nX0 11B0 1nX0 11B0 1qL0 WN0 1qL0|22e5",
-			"Asia/Manila|+08|-80|0||24e6",
+			"Asia/Kuala_Lumpur|+08|-80|0||71e5",
 			"Asia/Kolkata|IST|-5u|0||15e6",
 			"Asia/Chita|+10 +08 +09|-a0 -80 -90|012|1N7s0 3re0|33e4",
 			"Asia/Ulaanbaatar|+08 +09|-80 -90|01010|1O8G0 1cJ0 1cP0 1cJ0|12e5",
@@ -41089,10 +41102,11 @@ module.exports = function (element) {
 			"Asia/Krasnoyarsk|+08 +07|-80 -70|01|1N7u0|10e5",
 			"Asia/Magadan|+12 +10 +11|-c0 -a0 -b0|012|1N7q0 3Cq0|95e3",
 			"Asia/Makassar|WITA|-80|0||15e5",
+			"Asia/Manila|PST|-80|0||24e6",
 			"Europe/Athens|EET EEST|-20 -30|01010101010101010101010|1GNB0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0|35e5",
 			"Asia/Novosibirsk|+07 +06|-70 -60|010|1N7v0 4eN0|15e5",
 			"Asia/Omsk|+07 +06|-70 -60|01|1N7v0|12e5",
-			"Asia/Pyongyang|KST KST|-90 -8u|010|1P4D0 6BAu|29e5",
+			"Asia/Pyongyang|KST KST|-90 -8u|010|1P4D0 6BA0|29e5",
 			"Asia/Rangoon|+0630|-6u|0||48e5",
 			"Asia/Sakhalin|+11 +10|-b0 -a0|010|1N7r0 3rd0|58e4",
 			"Asia/Seoul|KST|-90|0||23e6",
@@ -41111,7 +41125,7 @@ module.exports = function (element) {
 			"Australia/Eucla|+0845|-8J|0||368",
 			"Australia/Lord_Howe|+11 +1030|-b0 -au|01010101010101010101010|1GQf0 1fAu 1cLu 1cMu 1cLu 1cMu 1cLu 1cMu 1cLu 1cMu 1cLu 1cMu 1cLu 1fAu 1cLu 1cMu 1cLu 1cMu 1cLu 1cMu 1cLu 1cMu|347",
 			"Australia/Perth|AWST|-80|0||18e5",
-			"Pacific/Easter|-05 -06|50 60|010101010101010101010|1H3D0 Op0 1zb0 Rd0 1wn0 Rd0 46n0 Ap0 1Nb0 Ap0 1Nb0 Ap0 1Nb0 Ap0 1Nb0 Ap0 1Nb0 Dd0 1Nb0 Ap0|30e2",
+			"Pacific/Easter|-05 -06|50 60|010101010101010101010|1H3D0 Op0 1zb0 Rd0 1wn0 Rd0 46n0 Ap0 1Nb0 Ap0 1Nb0 Ap0 1zb0 11B0 1nX0 11B0 1nX0 11B0 1nX0 11B0|30e2",
 			"Europe/Dublin|GMT IST|0 -10|01010101010101010101010|1GNB0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0|12e5",
 			"Etc/GMT-1|+01|-10|0|",
 			"Pacific/Fakaofo|+13|-d0|0||483",
@@ -41126,20 +41140,21 @@ module.exports = function (element) {
 			"Pacific/Gambier|-09|90|0||125",
 			"Etc/UCT|UCT|0|0|",
 			"Etc/UTC|UTC|0|0|",
-			"Europe/Astrakhan|+04 +03|-40 -30|010|1N7y0 3rd0",
+			"Europe/Ulyanovsk|+04 +03|-40 -30|010|1N7y0 3rd0|13e5",
 			"Europe/London|GMT BST|0 -10|01010101010101010101010|1GNB0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0|10e6",
 			"Europe/Chisinau|EET EEST|-20 -30|01010101010101010101010|1GNA0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0|67e4",
 			"Europe/Kaliningrad|+03 EET|-30 -20|01|1N7z0|44e4",
-			"Europe/Volgograd|+04 +03|-40 -30|01|1N7y0|10e5",
+			"Europe/Kirov|+04 +03|-40 -30|01|1N7y0|48e4",
 			"Europe/Moscow|MSK MSK|-40 -30|01|1N7y0|16e6",
 			"Europe/Saratov|+04 +03|-40 -30|010|1N7y0 5810",
 			"Europe/Simferopol|EET EEST MSK MSK|-20 -30 -40 -30|0101023|1GNB0 1qM0 11A0 1o00 11z0 1nW0|33e4",
+			"Europe/Volgograd|+04 +03|-40 -30|010|1N7y0 9Jd0|10e5",
 			"Pacific/Honolulu|HST|a0|0||37e4",
 			"MET|MET MEST|-10 -20|01010101010101010101010|1GNB0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0",
 			"Pacific/Chatham|+1345 +1245|-dJ -cJ|01010101010101010101010|1GQe0 1cM0 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1cM0 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00|600",
 			"Pacific/Apia|+14 +13|-e0 -d0|01010101010101010101010|1GQe0 1cM0 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1cM0 1fA0 1a00 1fA0 1a00 1fA0 1a00 1fA0 1a00|37e3",
 			"Pacific/Bougainville|+10 +11|-a0 -b0|01|1NwE0|18e4",
-			"Pacific/Fiji|+13 +12|-d0 -c0|01010101010101010101010|1Goe0 1Nc0 Ao0 1Q00 xz0 1SN0 uM0 1SM0 uM0 1VA0 s00 1VA0 s00 1VA0 uM0 1SM0 uM0 1SM0 uM0 1VA0 s00 1VA0|88e4",
+			"Pacific/Fiji|+13 +12|-d0 -c0|01010101010101010101010|1Goe0 1Nc0 Ao0 1Q00 xz0 1SN0 uM0 1SM0 uM0 1VA0 s00 1VA0 s00 1VA0 s00 1VA0 uM0 1SM0 uM0 1VA0 s00 1VA0|88e4",
 			"Pacific/Guam|ChST|-a0|0||17e4",
 			"Pacific/Marquesas|-0930|9u|0||86e2",
 			"Pacific/Pago_Pago|SST|b0|0||37e2",
@@ -41433,13 +41448,12 @@ module.exports = function (element) {
 			"Asia/Kamchatka|Pacific/Wallis",
 			"Asia/Kathmandu|Asia/Katmandu",
 			"Asia/Kolkata|Asia/Calcutta",
+			"Asia/Kuala_Lumpur|Asia/Brunei",
+			"Asia/Kuala_Lumpur|Asia/Kuching",
+			"Asia/Kuala_Lumpur|Asia/Singapore",
+			"Asia/Kuala_Lumpur|Etc/GMT-8",
+			"Asia/Kuala_Lumpur|Singapore",
 			"Asia/Makassar|Asia/Ujung_Pandang",
-			"Asia/Manila|Asia/Brunei",
-			"Asia/Manila|Asia/Kuala_Lumpur",
-			"Asia/Manila|Asia/Kuching",
-			"Asia/Manila|Asia/Singapore",
-			"Asia/Manila|Etc/GMT-8",
-			"Asia/Manila|Singapore",
 			"Asia/Rangoon|Asia/Yangon",
 			"Asia/Rangoon|Indian/Cocos",
 			"Asia/Seoul|ROK",
@@ -41493,7 +41507,6 @@ module.exports = function (element) {
 			"Etc/UTC|UTC",
 			"Etc/UTC|Universal",
 			"Etc/UTC|Zulu",
-			"Europe/Astrakhan|Europe/Ulyanovsk",
 			"Europe/Athens|Asia/Nicosia",
 			"Europe/Athens|EET",
 			"Europe/Athens|Europe/Bucharest",
@@ -41559,7 +41572,7 @@ module.exports = function (element) {
 			"Europe/Paris|Europe/Zagreb",
 			"Europe/Paris|Europe/Zurich",
 			"Europe/Paris|Poland",
-			"Europe/Volgograd|Europe/Kirov",
+			"Europe/Ulyanovsk|Europe/Astrakhan",
 			"Pacific/Auckland|Antarctica/McMurdo",
 			"Pacific/Auckland|Antarctica/South_Pole",
 			"Pacific/Auckland|NZ",
@@ -52191,7 +52204,7 @@ S2.define('jquery.select2',[
         if (options.addOnClick && options.onClick)
             result.on('click', $.proxy( result._bsButtonOnClick, result ) );
 
-        result._bsAddHtml( options, true, true );
+        result._bsAddHtml( options, false, true );
 
         return result;
     };
@@ -52219,8 +52232,12 @@ S2.define('jquery.select2',[
         options.class = 'allow-zero-selected';
 
         //Use modernizr-mode and classes if icon and/or text containe two values
-        if ($.isArray(options.icon)){
-            options.iconClassName = ['hide-for-active', 'show-for-active'];
+        if ($.isArray(options.icon) && (options.icon.length == 2)){
+            options.icon = [[
+                options.icon[0]+ ' icon-hide-for-active',
+                options.icon[1]+ ' icon-show-for-active'
+            ]];
+//HER             options.iconClassName = ['hide-for-active', 'show-for-active'];
             options.modernizr = true;
         }
         if ($.isArray(options.text)){
@@ -52470,6 +52487,53 @@ S2.define('jquery.select2',[
     };
 
 }(jQuery, this.i18next, this, document));
+;
+/****************************************************************************
+	jquery-bootstrap-fontawesome.js,
+
+	(c) 2017, FCOO
+
+	https://github.com/fcoo/jquery-bootstrap
+	https://github.com/fcoo
+
+****************************************************************************/
+
+(function ($/*, window, document, undefined*/) {
+	"use strict";
+
+    /*******************************************
+    $.bsMarkerIcon(colorClassName, borderColorClassName, options)
+    Return options to create a marker-icon = round icon with
+    inner color given as color in colorClassName and
+    border-color given as color in borderColorClassName
+    options:
+        faClassName: fa-class for symbol. Default = "fa-circle"
+        extraClassName: string or string[]. Extra class-name added
+        partOfList : true if the icon is part of a list => return [icon-name] instead of [[icon-name]]
+    ********************************************/
+    $.bsMarkerIcon = function(colorClassName, borderColorClassName, options){
+        options = $.extend({
+            faClassName   : 'fa-circle',
+            extraClassName: '',
+            partOfList    : false
+        }, options || {});
+
+        colorClassName       = colorClassName || 'text-white';
+        borderColorClassName = borderColorClassName || 'text-black';
+
+        var className =
+                options.faClassName + ' ' +
+                ($.isArray(options.extraClassName) ? options.extraClassName.join(' ') : options.extraClassName) +
+                ' ';
+        var result = [
+            'fas ' + className + colorClassName,
+            'far ' + className + borderColorClassName
+        ];
+
+        return options.partOfList ? result : [result];
+    };
+
+}(jQuery, this, document));
 ;
 /****************************************************************************
 	jquery-bootstrap-form.js
@@ -53045,15 +53109,15 @@ S2.define('jquery.select2',[
         back    : 'fa-chevron-left',
         forward : 'fa-chevron-right',
 
-        pin     : ['fas fa-thumbtack fa-stack-1x fa-inside-circle', 'far fa-circle fa-stack-1x'],
+        pin     : ['fas fa-thumbtack fa-inside-circle', 'far fa-circle'],
         unpin   : 'fa-thumbtack',
 
         extend  : 'fa-chevron-up',
         diminish: 'fa-chevron-down',
 
-        new     : ['far fa-window-maximize fa-stack-1x fa-inside-circle2', 'far fa-circle fa-stack-1x'],
+        new     : ['far fa-window-maximize fa-inside-circle2', 'far fa-circle'],
 
-        close   : ['far fa-times-circle fa-stack-1x hide-for-hover', 'fas fa-times-circle text-danger fa-stack-1x show-for-hover']
+        close   : ['fas fa-circle back', 'far fa-times-circle middle', 'fas fa-times-circle front']
     };
 
     //mandatoryHeaderIconClass = mandatory class-names and title for the different icons on the header
@@ -53085,9 +53149,14 @@ S2.define('jquery.select2',[
         options = $.extend( true, {headerClassName: '', inclHeader: true, icons: {} }, options );
         this.addClass( options.headerClassName );
 
-        if (options.inclHeader)
+        if (options.inclHeader){
+            options.header = $._bsAdjustIconAndText(options.header);
+            //If header contents more than one text => set the first to "fixed" so that only the following text are truncated
+            if ($.isArray(options.header) && (options.header.length > 1)){
+                options.header[0].textClass = 'fixed-header';
+            }
             this._bsAddHtml( options.header || $.EMPTY_TEXT );
-
+        }
         //Add icons (if any)
         if ( !$.isEmptyObject(options.icons) ) {
             //Container for icons
@@ -53103,8 +53172,8 @@ S2.define('jquery.select2',[
             $.each( ['back', 'forward', 'pin', 'unpin', 'extend', 'diminish', 'new', 'close'], function( index, id ){
                 var iconOptions = options.icons[id],
                     classAndTitle = mandatoryHeaderIconClassAndTitle[id] || {};
-                if (iconOptions && iconOptions.onClick){
 
+                if (iconOptions && iconOptions.onClick){
                     $._bsCreateIcon(
                         $.bsHeaderIcons[id],
                         $iconContainer,
@@ -54433,7 +54502,7 @@ options
                 $barDom.addClass('no-header');
 
             //Replace content with text as object {icon, txt,etc}
-            $body._bsAddHtml( options.content );
+            $body._bsAddHtml( options.content, true );
             $body.addClass('text-'+options.textAlign);
 
             //Add buttons (if any)
@@ -54887,7 +54956,7 @@ options
     //Setting defaults for select2
     function formatSelectOption( options ) {
         options.text = options._text;
-        var $result = $('<span/>')._bsAddHtml( options, true );
+        var $result = $('<span/>')._bsAddHtml( options/*, true */);
         options.text = '';
         return $result;
     }
@@ -55110,7 +55179,7 @@ options
                 .addClass( isItem ? 'dropdown-item' : 'dropdown-header' )
                 .addClass( options.center ? 'text-center' : '')
                 .appendTo( $result )
-                ._bsAddHtml( itemOptions, true )
+                ._bsAddHtml( itemOptions/*, true */)
                 .on('mouseenter', $.proxy($item._selectlist_onMouseenter, $item) )
                 .on('mouseleave', $.proxy($item._selectlist_onMouseleave, $item) );
 
@@ -55996,7 +56065,7 @@ TODO:   truncate     : false. If true the column will be truncated. Normally onl
     /****************************************************************************************
     $._bsCreateIcon = internal method to create $-icon
     ****************************************************************************************/
-    $._bsCreateIcon = function( options, $appendTo, title, className ){
+    $._bsCreateIcon = function( options, $appendTo, title, className/*, insideStack*/ ){
         var $icon;
 
         if ($.type(options) == 'string')
@@ -56004,11 +56073,15 @@ TODO:   truncate     : false. If true the column will be truncated. Normally onl
 
         if ($.isArray( options)){
             //Create a stacked icon
-            $icon = $._bsCreateElement( 'span', null, title, null, 'fa-stack ' + (className || '')  );
+             $icon = $._bsCreateElement( 'div', null, title, null, 'container-stacked-icons ' + (className || '')  );
 
             $.each( options, function( index, opt ){
-                $._bsCreateIcon( opt, $icon );
+                $._bsCreateIcon( opt, $icon, null, 'stacked-icon' );
             });
+
+            //If any of the stacked icons have class fa-no-margin => set if on the container
+            if ($icon.find('.fa-no-margin').length)
+                $icon.addClass('fa-no-margin');
         }
         else {
             var allClassNames = options.icon || options.class || '';
@@ -56020,11 +56093,11 @@ TODO:   truncate     : false. If true the column will be truncated. Normally onl
             allClassNames = allClassNames + ' ' + (className || '');
 
             $icon = $._bsCreateElement( 'i', null, title, null, allClassNames );
+
         }
         $icon.appendTo( $appendTo );
         return $icon;
     };
-
 
 
     $.fn.extend({
@@ -56136,15 +56209,36 @@ TODO:   truncate     : false. If true the column will be truncated. Normally onl
         checkForContent: [Boolean] If true AND options.content exists => use options.content instead
         ****************************************************************************************/
 
-        _bsAddHtml:  function( options, checkForContent, ignoreLink ){
+        _bsAddHtml:  function( options, /*checkForContent*/htmlInDiv, ignoreLink ){
             //**************************************************
             function getArray( input ){
                 return input ? $.isArray( input ) ? input : [input] : [];
             }
             //**************************************************
+            function isHtmlString( str ){
+                if (!htmlInDiv || ($.type(str) != 'string')) return false;
 
-            if (checkForContent && (options.content != null))
-                return this._bsAddHtml( options.content );
+                var isHtml = false,
+                    $str = null;
+                try       { $str = $(str); }
+                catch (e) { $str = null;   }
+
+                if ($str && $str.length){
+                    isHtml = true;
+                    $str.each( function( index, elem ){
+                        if (!elem.nodeType || (elem.nodeType != 1)){
+                            isHtml = false;
+                            return false;
+                        }
+                    });
+                }
+                return isHtml;
+            }
+
+            //**************************************************
+//Removed since no content is given
+//            if (checkForContent && (options.content != null))
+//                return this._bsAddHtml( options.content );
 
             options = options || '';
 
@@ -56153,14 +56247,10 @@ TODO:   truncate     : false. If true the column will be truncated. Normally onl
             //options = array => add each
             if ($.isArray( options )){
                 $.each( options, function( index, textOptions ){
-                    _this._bsAddHtml( textOptions );
+                    _this._bsAddHtml( textOptions, htmlInDiv, ignoreLink );
                 });
                 return this;
             }
-
-            //Adjust icon and/or text if iot is not at format-options
-            if (!options.vfFormat)
-                options = $._bsAdjustIconAndText( options );
 
             this.addClass('container-icon-and-text');
 
@@ -56169,6 +56259,16 @@ TODO:   truncate     : false. If true the column will be truncated. Normally onl
                 this.append( options );
                 return this;
             }
+
+            //If the content is a string containing html-code => append it and return
+            if (isHtmlString(options)){
+                this.append( $(options) );
+                return this;
+            }
+
+            //Adjust icon and/or text if it is not at format-options
+            if (!options.vfFormat)
+                options = $._bsAdjustIconAndText( options );
 
             //options = simple textOptions
             var iconArray       = getArray( options.icon ),
@@ -56193,8 +56293,14 @@ TODO:   truncate     : false. If true the column will be truncated. Normally onl
                 _this.addClass('text-'+ options.color);
 
             //Add text
+
             $.each( textArray, function( index, text ){
-                var $text = $._bsCreateElement( 'span', linkArray[ index ], titleArray[ index ], textStyleArray[ index ], textClassArray[index], textDataArray[index] );
+                //If text ={da,en} and both da and is html-stirng => build inside div
+                var tagName = 'span';
+                if ( (text.hasOwnProperty('da') && isHtmlString(text.da)) || (text.hasOwnProperty('en') && isHtmlString(text.en)) )
+                    tagName = 'div';
+
+                var $text = $._bsCreateElement( tagName, linkArray[ index ], titleArray[ index ], textStyleArray[ index ], textClassArray[index], textDataArray[index] );
                 if ($.isFunction( text ))
                     text( $text );
                 else
@@ -56950,8 +57056,15 @@ TODO:   truncate     : false. If true the column will be truncated. Normally onl
                         index = -1;
                 }
 
+                //Set coordIndex for consistent
+                if (feature.geometry.type == 'Point')
+                    prop.coordIndex = prop.startCoordIndex;
+
                 //If the feature is a multiPoint => convert it to NxPoint and copy properties and try to match name from nameList
                 if (feature.geometry.type == 'MultiPoint'){
+                    var hasCoordIndex = $.type(feature.properties.startCoordIndex) == 'number',
+                        startCoordIndex = feature.properties.startCoordIndex;
+
                     $.each( feature.geometry.coordinates, function( coorIndex, coor ){
                         var newFeature = {
                                 type: "Feature",
@@ -56965,6 +57078,11 @@ TODO:   truncate     : false. If true the column will be truncated. Normally onl
                         //Use name from nameList (if any)
                         if (!!nameList[coorIndex])
                             newFeature.properties.name = nameList[coorIndex];
+
+                        //Set and inc coordIndex
+                        if (hasCoordIndex)
+                            newFeature.properties.coordIndex = startCoordIndex + coorIndex;
+
 
                         newFeatures.push(newFeature);
                     });
@@ -57097,8 +57215,20 @@ TODO:   truncate     : false. If true the column will be truncated. Normally onl
         _resolveObj - Get messages for one resolve-function and call it
         *************************************************/
         _resolveObj: function( obj ){
-            var id = obj.domain ? obj.domain : 'ALL';
-            obj.resolve( this.domainList[id], obj.domain );
+            var _this = this,
+                id = obj.domain ? obj.domain : 'ALL',
+                messageList = [];
+            if (id == 'ALL')
+                messageList = this.domainList[id];
+            else
+                //Find messagwes from one or more domain-id(s)
+                $.each( $.isArray(id) ? id : id.split(' '), function( index, id ){
+                    if (_this.domainList[id])
+                        $.each( _this.domainList[id], function( index, mess ){
+                            messageList.push( mess );
+                        });
+                });
+            obj.resolve( messageList, obj.domain );
         },
 
         /*************************************************
