@@ -146,17 +146,29 @@
                 //if ( !found && (message.shortId == 'NM-782-18') ) { //Publicationer uden anchor
                 //if ( !found && (message.shortId == 'NM-792-18') ) { //Vedhæftelser
                 //if ( !found && (message.shortId == 'NM-063-17') ) { //Flere main area
-                if ( !found && (message.shortId == 'NM-770-18') ) { //Flere main area
+                //if ( !found && (message.shortId == 'NM-770-18') ) { //Flere main area
+                //if ( !found && (message.shortId == 'NM-620-18') ) { //Flere details
+                //if ( !found && (message.shortId == 'NM-853-18') ) { //Flere details
                 //if ( !found && (message.areaLevelList[0].length > 1) ) { //Flere main area
                 //if ( !found && message.publication && message.publication.da ) { //Flere publicationer
                 //if ( !found && message.publication && (message.publication.da != message.publication.en) ) { //Forskellige antal publicationerfor dansk og engelsk
-                //if ( !found && !message.shortId) { //Typisk Fire Warning
+                if ( !found && !message.shortId) { //Typisk Fire Warning
 
-                    found = true;
+/*
+        window.Niord.getMessage('NM-620-18',
+            function( mess ){
+                console.log( 'NM-620-18', mess );
+            },
+            function( domain){ console.log( domain+' failed'); }
+        );
+*/
+
+                    //found = true;
                     //console.log(message.bsObject());
                     //console.log(message);
-                    //    message.asModal('large').show();
-
+                    message.asModal().show();
+                    //message.bsAccordionOptions();
+/*
                     window.theModal = message.asModalSmall({
                         width: 230, height: 200,
                         fixedContent: 'OVERSKREVET',
@@ -167,6 +179,7 @@
                             width: 350
                         }
                     });
+*/
 
 //{ show: true, _flexWidth: true, _extraWidth: false, _static: true }
                     //message.asModal('small').show();

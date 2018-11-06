@@ -26,19 +26,19 @@
     ns.options = $.extend( true, {
         //partIcon = Font-awesome icon for header of the different parts
         partIcon: {
-            MAP         : 'fa-map-marker',
-            REFERENCE   : 'fa-link',
-            CATEGORY    : 'fa-folder',
-            TIME        : 'fa-clock',
-            DETAILS     : 'fa-info',
-            PROHIBITION : 'fa-times',
-            SIGNALS     : 'fa-volume-up',
-            NOTE        : 'far fa-sticky-note',
-            ATTACHMENTS : 'fa-paperclip',
-            AREA        : 'far fa-square',
-            CHARTS      : 'fa-map',
-            PUBLICATIONS: 'fa-book-open',
-            SOURCE      : 'fa-copyright'
+            MAP        : 'fa-map-marker',
+            REFERENCE  : 'fa-link',
+            CATEGORY   : 'fa-folder',
+            TIME       : 'fa-clock',
+            DETAILS    : 'fa-info',
+            PROHIBITION: 'fa-times',
+            SIGNALS    : 'fa-volume-up',
+            NOTE       : 'far fa-sticky-note',
+            ATTACHMENT : 'fa-paperclip',
+            AREA       : 'far fa-square',
+            CHART      : 'fa-map',
+            PUBLICATION: 'fa-book-open',
+            SOURCE     : 'fa-copyright'
         },
 
         //partFooter = Footer to the different parts
@@ -73,10 +73,6 @@
 
     }, ns.options || {} );
 
-
-
-
-
     //Translate the different domains and part headers
     i18next.addPhrases('niord', {
         'nw'         : {da:'Navigationsadvarsel',            en:'Navigational Warning'   }, //domain = niord-nw: All Danish navigational warnings are produced in the "niord-nw" domain.
@@ -88,20 +84,20 @@
         'fe'         : {da:'Skydeøvelse',                    en:'Firing Exercise'        }, //domain = niord-fe: The actual firing exercises are maintained as local navigational warnings in the "niord-fe" domain.
         'fe_plural'  : {da:'Skydeøvelser',                   en:'Firing Exercises'       },
 
-        'MAP'         : {da: 'Kort',          en:'Map'          },
-        'REFERENCE'   : {da: 'Referencer',    en:'References'   },
-        'reference'   : {da: 'Referencer',    en:'References'   },
-        'CATEGORY'    : {da: 'Kategorier',    en:'Categories'   },
-        'TIME'        : {da: 'Tid',           en:'Time'         } ,
-        'DETAILS'     : {da: 'Detaljer',      en:'Details'      },
-        'PROHIBITION' : {da: 'Forbud',        en:'Prohibition'  },
-        'SIGNALS'     : {da: 'Skydesignaler', en:'Signals'      },
-        'NOTE'        : {da: 'Note',          en:'Note'         },
-        'ATTACHMENTS' : {da: 'Vedhæftninger', en:'Attachments'  },
-        'AREA'        : {da: 'Område',        en:'Area'         },
-        'CHARTS'      : {da: 'Søkort',        en:'Charts'       },
-        'PUBLICATIONS': {da: 'Publikationer', en:'Publications' },
-        'SOURCE'      : {da: 'Kilde',         en:'Source'       }
+        'MAP'        : {da: 'Kort',          en:'Map'          },
+        'REFERENCE'  : {da: 'Referencer',    en:'References'   },
+        'reference'  : {da: 'Referencer',    en:'References'   },
+        'CATEGORY'   : {da: 'Kategorier',    en:'Categories'   },
+        'TIME'       : {da: 'Tid',           en:'Time'         } ,
+        'DETAILS'    : {da: 'Detaljer',      en:'Details'      },
+        'PROHIBITION': {da: 'Forbud',        en:'Prohibition'  },
+        'SIGNALS'    : {da: 'Skydesignaler', en:'Signals'      },
+        'NOTE'       : {da: 'Note',          en:'Note'         },
+        'ATTACHMENT' : {da: 'Vedhæftninger', en:'Attachments'  },
+        'AREA'       : {da: 'Område',        en:'Area'         },
+        'CHART'      : {da: 'Søkort',        en:'Charts'       },
+        'PUBLICATION': {da: 'Publikationer', en:'Publications' },
+        'SOURCE'     : {da: 'Kilde',         en:'Source'       }
     });
 
     //Translate reference types
@@ -114,7 +110,7 @@
     });
 
     //List of ids for different type of message-part or group of info. 'MAP' is used internally
-    var defaultPartIdList   = ['REFERENCE', 'CATEGORY', 'TIME', 'DETAILS', 'PROHIBITION', 'SIGNALS', 'NOTE', 'ATTACHMENTS', 'AREA', 'CHARTS', 'PUBLICATIONS', 'SOURCE'],
+    var defaultPartIdList   = ['REFERENCE', 'CATEGORY', 'TIME', 'DETAILS', 'PROHIBITION', 'SIGNALS', 'NOTE', 'ATTACHMENT', 'AREA', 'CHART', 'PUBLICATION', 'SOURCE'],
         fullPartIdList      = ['MAP'].concat(defaultPartIdList);
 
     //messagesAsModal: Create and open a modal-window with all messages, filtered and sorted
@@ -124,6 +120,11 @@
         //TEST: console.log('messagesAsModal', $(this).data('niord-link-id'), $(this).data('niord-link-value'));
     }
 */
+
+    //trim(str) trim str for leading and tail space and punctuation
+    function trim( str ){
+        return str.replace(/^[\., ]+|[\., ]+$/g, "");
+    }
 
     /******************************************************
     Message.bsHeaderOptions
@@ -268,12 +269,15 @@
     };
 
     //Internal methods
-    ns.Message.prototype.has = function( id ){
-        return this[id] && !$.isEmptyObject( this[id] );
+    ns.Message.prototype.getList = function(id){
+        return this[id.toLowerCase()+'List'];
+    };
+    ns.Message.prototype.has = function( id ){ //return true;
+        return this.getList(id) && this.getList(id).length;
     };
     ns.Message.prototype.each = function( id, func ){
         var _this = this;
-        $.each( this[id], function( index, obj ){
+        $.each( this.getList(id), function( index, obj ){
             func( obj, _this );
         });
     };
@@ -291,7 +295,7 @@
             addPart, openPart, bsPart, list;
 
         //*******************************************************************************
-        function bsPartAsParentList(listId, linkId, childrenList, parent){
+        function bsPartAsParentList(listId, childrenList, parent){
             if (!_this.has(listId)) return;
             addPart = true;
             bsPart.content = [];
@@ -300,7 +304,7 @@
                 bsPart.content.push(
                     $('<div/>')
                         .addClass('parent-list-container')
-                        ._bsAddHtml( parentList( part, linkId, childrenList, parent ) )
+                        ._bsAddHtml( parentList( part, listId, childrenList, parent ) )
                 );
             });
         }
@@ -320,9 +324,10 @@
         function getDateLong( m )     { return _getMomentFormated( m, 'date_long',    'dateFormat' ); }
         function getTime( m )         { return _getMomentFormated( m, 'time',         'timeFormat' ); }
         //*******************************************************************************
-
         $.each( partIdList, function( index, partId ){
-            var messagePart = _this.parts[partId];
+
+            var hasPart = _this.has(partId);
+
             bsPart = {
                 header : {
                     icon: ns.options.partIcon[partId]+' fa-fw',
@@ -346,7 +351,7 @@
 
                 //****************************
                 case 'REFERENCE':
-                    if (_this.has('references')){
+                    if (hasPart){
                         addPart = true;
                         bsPart.content = {
                             type   : 'list',
@@ -354,7 +359,7 @@
                             content: []
                         };
                         //Create list of references
-                        _this.each( 'references', function( reference ){
+                        _this.each( 'reference', function( reference ){
                             bsPart.content.content.push( reference.bsObject() );
                         });
                     }
@@ -362,9 +367,9 @@
 
                 //****************************
                 case 'CATEGORY':
-                    if (_this.has('categories') && (_this.domainId == 'NW')){
+                    if (hasPart && (_this.domainId == 'NW')){
                         bsPartAsParentList(
-                            'categories', 'category', null,
+                            'category', null,
                             linkToModal('niord:'+_this.domainId.toLowerCase(), 'domain', _this.domainId)
                         );
                     }
@@ -372,12 +377,12 @@
 
                 //****************************
                 case 'TIME':
-                    if (messagePart){
+                    if (hasPart){
                         addPart = true;
                         openPart = true;
 
                         bsPart.content = {
-                            type: 'table',
+                            type             : 'table',
                             styleClass       :'time-period',
                             verticalBorder   : false,
                             notFullWidth     : true,
@@ -404,49 +409,50 @@
                             periodState; //= -2: starts and end in past, 0: starts in past end in future, +2: starts and ends in future
                             //Test now = moment('2018-10-10T22:00');
 
-                        $.each( messagePart.eventDates, function( index, eventDate ){
-                            fromState = eventDate.fromDate ? (eventDate.fromDate.isBefore(now) ? -1 : +1) : 0;
-                            toState   = eventDate.toDate   ? (eventDate.toDate.isBefore(now)   ? -1 : +1) : 0;
+                        _this.each('time', function( messagePart ){
+                            $.each( messagePart.eventDates, function( index, eventDate ){
+                                fromState = eventDate.fromDate ? (eventDate.fromDate.isBefore(now) ? -1 : +1) : 0;
+                                toState   = eventDate.toDate   ? (eventDate.toDate.isBefore(now)   ? -1 : +1) : 0;
 
-                            //Add class-names to row-element to set past- or future-color on edge
-                            var nextRowClassNames = [];
-                            if (fromState)
-                                nextRowClassNames.push( fromState == -1 ? 'start-before-now' : 'start-after-now' );
-                            if (toState)
-                                nextRowClassNames.push( toState   == -1 ? 'end-before-now'   : 'end-after-now' );
+                                //Add class-names to row-element to set past- or future-color on edge
+                                var nextRowClassNames = [];
+                                if (fromState)
+                                    nextRowClassNames.push( fromState == -1 ? 'start-before-now' : 'start-after-now' );
+                                if (toState)
+                                    nextRowClassNames.push( toState   == -1 ? 'end-before-now'   : 'end-after-now' );
 
-                            //Add now-colored top-border if previous period is in past and this period is in future
-                            if ((periodState == -2) && (fromState + toState == +2))
-                                nextRowClassNames.push('first-after-now');
+                                //Add now-colored top-border if previous period is in past and this period is in future
+                                if ((periodState == -2) && (fromState + toState == +2))
+                                    nextRowClassNames.push('first-after-now');
 
-                            periodState = fromState + toState;
+                                periodState = fromState + toState;
 
-                            rowClassName.push( nextRowClassNames.join(' ') );
+                                rowClassName.push( nextRowClassNames.join(' ') );
 
-                            var endContent = null;
-                            if (eventDate.toDate){
-                                endContent = getTime( eventDate.toDate );
-                                //Check if  toDate is another day (in current timezone) that fromDate => add (+N) after end-time (N = differens id 'days'
-                                if (eventDate.fromDate){
-                                    endContent = [endContent];
-                                    if (eventDate.fromDate.tzMoment().dateFormat() != eventDate.toDate.tzMoment().dateFormat()){
-                                        var dayDiff = 0,
-                                            tempFromDate = moment( eventDate.fromDate );
-                                        while (tempFromDate.isBefore(eventDate.toDate)){
-                                            dayDiff++;
-                                            tempFromDate.add(1, 'd');
+                                var endContent = null;
+                                if (eventDate.toDate){
+                                    endContent = getTime( eventDate.toDate );
+                                    //Check if  toDate is another day (in current timezone) that fromDate => add (+N) after end-time (N = differens id 'days'
+                                    if (eventDate.fromDate){
+                                        endContent = [endContent];
+                                        if (eventDate.fromDate.tzMoment().dateFormat() != eventDate.toDate.tzMoment().dateFormat()){
+                                            var dayDiff = 0,
+                                                tempFromDate = moment( eventDate.fromDate );
+                                            while (tempFromDate.isBefore(eventDate.toDate)){
+                                                dayDiff++;
+                                                tempFromDate.add(1, 'd');
+                                            }
+                                            endContent.push({ text: '<sup>(+'+dayDiff+')</sup>'});
                                         }
-                                        endContent.push({ text: '<sup>(+'+dayDiff+')</sup>'});
                                     }
                                 }
-                            }
 
-                            content.push({
-                                date   : eventDate.fromDate ? (options.fullDate ? getDateWeekday(eventDate.fromDate) : getDate( eventDate.fromDate )) : null,
-                                start  : eventDate.fromDate ? getTime( eventDate.fromDate ) : null,
-                                end    : endContent
+                                content.push({
+                                    date   : eventDate.fromDate ? (options.fullDate ? getDateWeekday(eventDate.fromDate) : getDate( eventDate.fromDate )) : null,
+                                    start  : eventDate.fromDate ? getTime( eventDate.fromDate ) : null,
+                                    end    : endContent
+                                });
                             });
-
                         });
                     }
                     break;
@@ -456,23 +462,39 @@
                 case 'PROHIBITION':
                 case 'SIGNALS':
                 case 'NOTE':
-                    if (messagePart){
+                    if (hasPart){
                         addPart = true;
                         openPart = (partId == 'DETAILS');
-                        bsPart.content = messagePart.details;
+                        bsPart.content = [];
+                        _this.each(partId, function( messagePart ){
+
+                            //Add subject if it isn't already displayed as smallTitle
+                            if (!!messagePart.subject && (trim(messagePart.subject.da) != trim(_this.shortTitle.da)) )
+                                bsPart.content.push({
+                                    text         : messagePart.subject,
+                                    textClassName: 'd-block font-weight-bold'
+                                });
+
+                            if (messagePart.details)
+                                bsPart.content.push({
+                                    text         : messagePart.details,
+                                    textClassName: 'd-block'
+                                });
+
+                        });
                     }
 
                     break;
 
                 //****************************
-                case 'ATTACHMENTS':
-                    if (_this.has('attachments')){
+                case 'ATTACHMENT':
+                    if (hasPart){
                         addPart = true;
                         bsPart.content = {
                             type   : 'list',
                             content: []
                         };
-                        _this.each( 'attachments', function( attachment ){
+                        _this.each( 'attachment', function( attachment ){
                             if (options.largeVersion){
                                 bsPart.content.content.push({
                                     type    : 'fileView',
@@ -516,21 +538,21 @@
                     break;
 
                 //****************************
-                case 'CHARTS':
-                    if (_this.has('charts')){
+                case 'CHART':
+                    if (hasPart){
                         addPart = true;
                         bsPart.content = {
                             type   : 'list',
                             content: []
                         };
-                        _this.each( 'charts', function( chart ){
+                        _this.each( 'chart', function( chart ){
                             bsPart.content.content.push( chart.bsObject() );
                         });
                     }
                     break;
 
                 //****************************
-                case 'PUBLICATIONS':
+                case 'PUBLICATION':
                     addPart = true;
                     bsPart.content = {
                         type: 'list',
@@ -540,10 +562,10 @@
                     };
                     list = bsPart.content.content;
 
-                    if (_this.publications){
+                    if (hasPart){
                         var hr = {da:'', en:''},
                             addHr = false;
-                        $.each( _this.publications, function( id, publication ){
+                        $.each( _this.publicationList, function( id, publication ){
                             if (publication.text.da) hr.da = '<hr>';
                             if (publication.text.en) hr.en = '<hr>';
                             list.push({
