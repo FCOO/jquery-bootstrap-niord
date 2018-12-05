@@ -24,6 +24,13 @@
 
     //Extend Niord.options
     ns.options = $.extend( true, {
+
+        //domainIcon = options for icon for popup and modal header for each domain
+        domainIcon: {
+
+        },
+
+
         //partIcon = Font-awesome icon for header of the different parts
         partIcon: {
             MAP        : 'fa-map-marker',
@@ -144,6 +151,10 @@
                 result.text.push('-', this.title );
                 break;
         }
+
+        //Add icon
+        result.icon = ns.options.domainIcon[this.domainId] || null;
+
         return result;
     };
 
