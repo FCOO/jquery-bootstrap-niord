@@ -18429,6 +18429,7 @@ function get$1() {
     pluralSeparator: '_',
     contextSeparator: '_',
 
+    partialBundledLanguages: false, // allow bundling certain languages that are not remotely fetched
     saveMissing: false, // enable to send missing values
     updateMissing: false, // enable to update default values if different from translated value (only useful on initial development, or when keeping code as source of truth)
     saveMissingTo: 'fallback', // 'current' || 'all'
@@ -18629,7 +18630,7 @@ var I18n = function (_EventEmitter) {
 
     var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : noop;
 
-    if (!this.options.resources) {
+    if (!this.options.resources || this.options.partialBundledLanguages) {
       if (this.language && this.language.toLowerCase() === 'cimode') return callback(); // avoid loading resources for cimode
 
       var toLoad = [];
@@ -18888,7 +18889,7 @@ return i18next;
  * 
  */
 /**
- * bluebird build version 3.5.2
+ * bluebird build version 3.5.3
  * Features enabled: core, race, call_get, generators, map, nodeify, promisify, props, reduce, settle, some, using, timers, filter, any, each
 */
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Promise=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
@@ -22384,7 +22385,7 @@ _dereq_("./synchronous_inspection")(Promise);
 _dereq_("./join")(
     Promise, PromiseArray, tryConvertToPromise, INTERNAL, async, getDomain);
 Promise.Promise = Promise;
-Promise.version = "3.5.2";
+Promise.version = "3.5.3";
 _dereq_('./map.js')(Promise, PromiseArray, apiRejection, tryConvertToPromise, INTERNAL, debug);
 _dereq_('./call_get.js')(Promise);
 _dereq_('./using.js')(Promise, apiRejection, tryConvertToPromise, createContext, INTERNAL, debug);
@@ -54234,7 +54235,9 @@ options
         $result.extend( bsModal_prototype );
 
         //Add close-icon and create modal content
-        options.icons = { close: { onClick: $.proxy( bsModal_prototype.close, $result) } };
+        options.icons = options.icons || {};
+        options.icons.close = { onClick: $.proxy( bsModal_prototype.close, $result) };
+
         $modalDialog._bsModalContent( options );
         $result.data('bsModalDialog', $modalDialog);
 
@@ -56930,7 +56933,8 @@ TODO:   truncate     : false. If true the column will be truncated. Normally onl
         this.mainArea     = [];
         this.mainAreaName = [];
         this.areaTitle = {da:'', en:''};
-        this.mainArea.push( this.areaLevelList[0][0] );
+        if (this.areaLevelList.length)
+            this.mainArea.push( this.areaLevelList[0][0] );
         $.each( this.areaLevelList[1], function( index, area ){
             if (area.parent === _this.mainArea[0]){
                 _this.mainArea.push( area );
