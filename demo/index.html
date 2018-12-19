@@ -56,7 +56,7 @@
         $.valueFormat.add({
             id    : 'TEST_DATE_WEEKDAY',
             format: function( m ){
-                return m.format('dddd DD. MMM YYYY');
+                return moment(m).format('dddd DD. MMM YYYY');
             }
         });
 

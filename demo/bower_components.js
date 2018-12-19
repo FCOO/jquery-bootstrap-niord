@@ -17124,6 +17124,22 @@ var EventEmitter = function () {
   return EventEmitter;
 }();
 
+// http://lea.verou.me/2016/12/resolve-promises-externally-with-this-one-weird-trick/
+function defer() {
+  var res = void 0;
+  var rej = void 0;
+
+  var promise = new Promise(function (resolve, reject) {
+    res = resolve;
+    rej = reject;
+  });
+
+  promise.resolve = res;
+  promise.reject = rej;
+
+  return promise;
+}
+
 function makeString(object) {
   if (object == null) return '';
   /* eslint prefer-template: 0 */
@@ -17447,9 +17463,8 @@ var Translator = function (_EventEmitter) {
     if (!options) options = {};
 
     // non valid keys handling
-    if (keys === undefined || keys === null || keys === '') return '';
-    if (typeof keys === 'number') keys = String(keys);
-    if (typeof keys === 'string') keys = [keys];
+    if (keys === undefined || keys === null) return '';
+    if (!Array.isArray(keys)) keys = [String(keys)];
 
     // separators
     var keySeparator = options.keySeparator !== undefined ? options.keySeparator : this.options.keySeparator;
@@ -18104,7 +18119,7 @@ var Interpolator = function () {
       value = handleFormat(match[1].trim());
       if (value === undefined) {
         if (typeof missingInterpolationHandler === 'function') {
-          var temp = missingInterpolationHandler(str, match);
+          var temp = missingInterpolationHandler(str, match, options);
           value = typeof temp === 'string' ? temp : '';
         } else {
           this.logger.warn('missed to pass in variable ' + match[1] + ' for interpolating ' + str);
@@ -18508,10 +18523,13 @@ var I18n = function (_EventEmitter) {
     _this.modules = { external: [] };
 
     if (callback && !_this.isInitialized && !options.isClone) {
-      var _ret;
-
       // https://github.com/i18next/i18next/issues/879
-      if (!_this.options.initImmediate) return _ret = _this.init(options, callback), possibleConstructorReturn(_this, _ret);
+      if (!_this.options.initImmediate) {
+        var _ret;
+
+        _this.init(options, callback);
+        return _ret = _this, possibleConstructorReturn(_this, _ret);
+      }
       setTimeout(function () {
         _this.init(options, callback);
       }, 0);
@@ -18603,12 +18621,15 @@ var I18n = function (_EventEmitter) {
       };
     });
 
+    var deferred = defer();
+
     var load = function load() {
       _this2.changeLanguage(_this2.options.lng, function (err, t) {
         _this2.isInitialized = true;
         _this2.logger.log('initialized', _this2.options);
         _this2.emit('initialized', _this2.options);
 
+        deferred.resolve(t); // not rejecting on err (as err is only a loading translation failed warning)
         callback(err, t);
       });
     };
@@ -18619,7 +18640,7 @@ var I18n = function (_EventEmitter) {
       setTimeout(load, 0);
     }
 
-    return this;
+    return deferred;
   };
 
   /* eslint consistent-return: 0 */
@@ -18666,10 +18687,15 @@ var I18n = function (_EventEmitter) {
   };
 
   I18n.prototype.reloadResources = function reloadResources(lngs, ns, callback) {
+    var deferred = defer();
     if (!lngs) lngs = this.languages;
     if (!ns) ns = this.options.ns;
-    if (!callback) callback = function callback() {};
-    this.services.backendConnector.reload(lngs, ns, callback);
+    if (!callback) callback = noop;
+    this.services.backendConnector.reload(lngs, ns, function () {
+      deferred.resolve();
+      callback(null);
+    });
+    return deferred;
   };
 
   I18n.prototype.use = function use(module) {
@@ -18703,6 +18729,8 @@ var I18n = function (_EventEmitter) {
   I18n.prototype.changeLanguage = function changeLanguage(lng, callback) {
     var _this4 = this;
 
+    var deferred = defer();
+
     var done = function done(err, l) {
       _this4.translator.changeLanguage(l);
 
@@ -18711,6 +18739,9 @@ var I18n = function (_EventEmitter) {
         _this4.logger.log('languageChanged', l);
       }
 
+      deferred.resolve(function () {
+        return _this4.t.apply(_this4, arguments);
+      });
       if (callback) callback(err, function () {
         return _this4.t.apply(_this4, arguments);
       });
@@ -18737,6 +18768,8 @@ var I18n = function (_EventEmitter) {
     } else {
       setLng(lng);
     }
+
+    return deferred;
   };
 
   I18n.prototype.getFixedT = function getFixedT(lng, ns) {
@@ -18785,17 +18818,29 @@ var I18n = function (_EventEmitter) {
   I18n.prototype.loadNamespaces = function loadNamespaces(ns, callback) {
     var _this6 = this;
 
-    if (!this.options.ns) return callback && callback();
+    var deferred = defer();
+
+    if (!this.options.ns) {
+      callback && callback();
+      return Promise.resolve();
+    }
     if (typeof ns === 'string') ns = [ns];
 
     ns.forEach(function (n) {
       if (_this6.options.ns.indexOf(n) < 0) _this6.options.ns.push(n);
     });
 
-    this.loadResources(callback);
+    this.loadResources(function (err) {
+      deferred.resolve();
+      if (callback) callback(err);
+    });
+
+    return deferred;
   };
 
   I18n.prototype.loadLanguages = function loadLanguages(lngs, callback) {
+    var deferred = defer();
+
     if (typeof lngs === 'string') lngs = [lngs];
     var preloaded = this.options.preload || [];
 
@@ -18803,10 +18848,18 @@ var I18n = function (_EventEmitter) {
       return preloaded.indexOf(lng) < 0;
     });
     // Exit early if all given languages are already preloaded
-    if (!newLngs.length) return callback();
+    if (!newLngs.length) {
+      callback();
+      return Promise.resolve();
+    }
 
     this.options.preload = preloaded.concat(newLngs);
-    this.loadResources(callback);
+    this.loadResources(function (err) {
+      deferred.resolve();
+      if (callback) callback(err);
+    });
+
+    return deferred;
   };
 
   I18n.prototype.dir = function dir(lng) {
@@ -35423,7 +35476,7 @@ module.exports = function (element) {
 
     var defaultLocaleWeek = {
         dow : 0, // Sunday is the first day of the week.
-        doy : 6  // The week that contains Jan 1st is the first week of the year.
+        doy : 6  // The week that contains Jan 6th is the first week of the year.
     };
 
     function localeFirstDayOfWeek () {
@@ -36299,13 +36352,13 @@ module.exports = function (element) {
                     weekdayOverflow = true;
                 }
             } else if (w.e != null) {
-                // local weekday -- counting starts from begining of week
+                // local weekday -- counting starts from beginning of week
                 weekday = w.e + dow;
                 if (w.e < 0 || w.e > 6) {
                     weekdayOverflow = true;
                 }
             } else {
-                // default to begining of week
+                // default to beginning of week
                 weekday = dow;
             }
         }
@@ -36899,7 +36952,7 @@ module.exports = function (element) {
             years = normalizedInput.year || 0,
             quarters = normalizedInput.quarter || 0,
             months = normalizedInput.month || 0,
-            weeks = normalizedInput.week || 0,
+            weeks = normalizedInput.week || normalizedInput.isoWeek || 0,
             days = normalizedInput.day || 0,
             hours = normalizedInput.hour || 0,
             minutes = normalizedInput.minute || 0,
@@ -37203,7 +37256,7 @@ module.exports = function (element) {
                 ms : toInt(absRound(match[MILLISECOND] * 1000)) * sign // the millisecond decimal point is included in the match
             };
         } else if (!!(match = isoRegex.exec(input))) {
-            sign = (match[1] === '-') ? -1 : (match[1] === '+') ? 1 : 1;
+            sign = (match[1] === '-') ? -1 : 1;
             duration = {
                 y : parseIso(match[2], sign),
                 M : parseIso(match[3], sign),
@@ -37354,7 +37407,7 @@ module.exports = function (element) {
         if (!(this.isValid() && localInput.isValid())) {
             return false;
         }
-        units = normalizeUnits(!isUndefined(units) ? units : 'millisecond');
+        units = normalizeUnits(units) || 'millisecond';
         if (units === 'millisecond') {
             return this.valueOf() > localInput.valueOf();
         } else {
@@ -37367,7 +37420,7 @@ module.exports = function (element) {
         if (!(this.isValid() && localInput.isValid())) {
             return false;
         }
-        units = normalizeUnits(!isUndefined(units) ? units : 'millisecond');
+        units = normalizeUnits(units) || 'millisecond';
         if (units === 'millisecond') {
             return this.valueOf() < localInput.valueOf();
         } else {
@@ -37376,9 +37429,14 @@ module.exports = function (element) {
     }
 
     function isBetween (from, to, units, inclusivity) {
+        var localFrom = isMoment(from) ? from : createLocal(from),
+            localTo = isMoment(to) ? to : createLocal(to);
+        if (!(this.isValid() && localFrom.isValid() && localTo.isValid())) {
+            return false;
+        }
         inclusivity = inclusivity || '()';
-        return (inclusivity[0] === '(' ? this.isAfter(from, units) : !this.isBefore(from, units)) &&
-            (inclusivity[1] === ')' ? this.isBefore(to, units) : !this.isAfter(to, units));
+        return (inclusivity[0] === '(' ? this.isAfter(localFrom, units) : !this.isBefore(localFrom, units)) &&
+            (inclusivity[1] === ')' ? this.isBefore(localTo, units) : !this.isAfter(localTo, units));
     }
 
     function isSame (input, units) {
@@ -37387,7 +37445,7 @@ module.exports = function (element) {
         if (!(this.isValid() && localInput.isValid())) {
             return false;
         }
-        units = normalizeUnits(units || 'millisecond');
+        units = normalizeUnits(units) || 'millisecond';
         if (units === 'millisecond') {
             return this.valueOf() === localInput.valueOf();
         } else {
@@ -37397,11 +37455,11 @@ module.exports = function (element) {
     }
 
     function isSameOrAfter (input, units) {
-        return this.isSame(input, units) || this.isAfter(input,units);
+        return this.isSame(input, units) || this.isAfter(input, units);
     }
 
     function isSameOrBefore (input, units) {
-        return this.isSame(input, units) || this.isBefore(input,units);
+        return this.isSame(input, units) || this.isBefore(input, units);
     }
 
     function diff (input, units, asFloat) {
@@ -38620,7 +38678,7 @@ module.exports = function (element) {
     // Side effect imports
 
 
-    hooks.version = '2.22.2';
+    hooks.version = '2.23.0';
 
     setHookCallback(createLocal);
 
@@ -38661,7 +38719,7 @@ module.exports = function (element) {
         TIME: 'HH:mm',                                  // <input type="time" />
         TIME_SECONDS: 'HH:mm:ss',                       // <input type="time" step="1" />
         TIME_MS: 'HH:mm:ss.SSS',                        // <input type="time" step="0.001" />
-        WEEK: 'YYYY-[W]WW',                             // <input type="week" />
+        WEEK: 'GGGG-[W]WW',                             // <input type="week" />
         MONTH: 'YYYY-MM'                                // <input type="month" />
     };
 
@@ -42424,7 +42482,7 @@ options:
 
 ;
 /****************************************************************************
-	jquery-value-format.js, 
+	jquery-value-format.js,
 
 	(c) 2016, FCOO
 
@@ -42435,27 +42493,29 @@ options:
 
 (function ($, window, document, undefined) {
 	"use strict";
-	
+
     var dataId_prefix  = 'vf-',
         dataId_format  = dataId_prefix + 'format',
         dataId_value   = dataId_prefix + 'value',
         dataId_options = dataId_prefix + 'options';
 
+
     function defaultConvert( value ){ return value; }
 
+    /*
     var fallbackFormat = {
             id         : 'dummy',
             convert    : defaultConvert,
             convertBack: defaultConvert,
-            format     : function( value /*, options */) { return '** UNKNOWN FORMAT FOR "' + value + '" **'; }
+            format     : function( value , options ) { return '** UNKNOWN FORMAT FOR "' + value + '" **'; }
         };
-        
+    */
     //Create valueFormat-namespace
 	$.valueFormat = $.valueFormat || {};
 
     //*********************************************************************
     //jQuery.valueFormat.add = append a new format
-	$.valueFormat.add = function( options ){ 
+	$.valueFormat.add = function( options ){
         this.formats = this.formats || {};
 
         options.convert = options.convert || defaultConvert;
@@ -42469,17 +42529,20 @@ options:
 
     //*********************************************************************
     //jQuery.valueFormat.update: update all elements with data-vf-format == ids or part of ids
-	$.valueFormat.update = function( ids ){
-        ids = ids.split(' ');
-        for (var i=0; i<ids.length; i++ ){
-            var id = ids[i];
-            if (id)
-                $('*[data-'+dataId_format+'="' + id + '"]').vfUpdate();
-        }
+	$.valueFormat.update = function( ids, $parentElement ){
+        var selector = '',
+            _this = this;
+        $.each(ids.split(' '), function(index, id){
+            if (id && _this.formats && _this.formats[id])
+                selector = selector + (selector ? ',':'') + '*[data-'+dataId_format+'="' + id + '"]';
+        });
+
+        var $result = $parentElement ? $parentElement.find(selector) : $(selector);
+        $result.each( function(){ $(this).vfUpdate(); });
         return this;
     };
 
-   
+
     //*********************************************************************
     //jQuery.fn.vfFormat( id, options ): Sets the format of the selected elements and update them
 	$.fn.vfFormat = function( id, options, dontUpdate ) {
@@ -42487,9 +42550,7 @@ options:
             this.vfOptions( options, true );
 		return this.each(function() {
             var $this = $(this);
-            $this
-                .attr( 'data-'+dataId_format, id ) //Allow the element to be 'found' by $.valueFormat.update
-                .data( dataId_format, id );
+            $this.attr( 'data-'+dataId_format, id );
             if (!dontUpdate)
                 $this._vfUpdate();
 		});
@@ -42504,8 +42565,9 @@ options:
             var $this = $(this),
                 format = $this._vfGetFormat(),
                 options = $this._vfGetOptions();
+
             $this
-                .data( dataId_value, format.convert( value, options ) )
+                .attr( 'data-'+dataId_value, JSON.stringify( format.convert( value, options ) ) )
                 ._vfUpdate();
 		});
 	};
@@ -42515,7 +42577,8 @@ options:
 	$.fn.vfOptions = function( options, dontUpdate ) {
 		return this.each(function() {
             var $this = $(this);
-            $this.data( dataId_options, options );
+            $this.attr( 'data-'+dataId_options, JSON.stringify(options) );
+
             if (!dontUpdate)
                 $this._vfUpdate();
 		});
@@ -42528,47 +42591,39 @@ options:
                  .vfFormat( id, options, true )
                  .vfValue( value );
     };
-    
+
     //*********************************************************************
-    //jQuery.fn.vfUpdate(): Update the selected elements 
+    //jQuery.fn.vfUpdate(): Update the selected elements
 	$.fn.vfUpdate = function() {
 		return this.each(function() {
-            $( this )._vfUpdate();
+            $(this)._vfUpdate();
 		});
 	};
-    
+
+    //*********************************************************************
+    //jQuery.fn.vfUpdateChildren(): Update the selected elements children
+	$.fn.vfUpdateChildren = function() {
+        return this.find('*').vfUpdate();
+	};
+
     //*********************************************************************
     //Internal methods
     //jQuery.fn._vfGetFormat()
     $.fn._vfGetFormat = function() {
-        var formatId = this.data( dataId_format );
-        return $.valueFormat.formats && formatId ? $.valueFormat.formats[formatId] || fallbackFormat : fallbackFormat;
+        var formatId = this.attr( 'data-'+dataId_format );
+        return formatId && $.valueFormat.formats ? $.valueFormat.formats[formatId] : null;
     };
 
     //jQuery.fn._vfGetOptions()
     $.fn._vfGetOptions = function() {
-        var options = this.data( dataId_options ) || {};
-
-        //Convert options (if any) from string to json-object 
-        if (options && ($.type(options) == 'string') ){
-            options = options.split("'").join('"');
-            try {
-                var newOptions = JSON.parse( options );
-                if ($.type( newOptions ) == 'object')
-                    options = newOptions;
-            }
-            catch (e) { 
-                options = null;
-            }
-        }
-        return options;
+        return JSON.parse( this.attr('data-'+dataId_options ) || '""' );
     };
 
     //jQuery.fn._vfUpdate()
     $.fn._vfUpdate = function() {
         var format = this._vfGetFormat(),
             options = this._vfGetOptions(),
-            value = format.convertBack( this.data( dataId_value ), options );
+            value = format ? format.convertBack( JSON.parse( this.attr( 'data-'+dataId_value ) || '""'), options ) : undefined;
 
         if (value !== undefined){
             value = format.format( value, options );
@@ -42579,25 +42634,13 @@ options:
 
             if (options.capitalizeFirstLetter)
                 value = value.charAt(0).toUpperCase() + value.slice(1);
-            
+
             //prefix, postfix
             value = (options.prefix ? options.prefix : '') + value + (options.postfix ? options.postfix : '');
-
 
             this.html( value  );
         }
     };
-
-
-	/******************************************
-	Initialize/ready 
-	*******************************************/
-	$(function() { 
-
-	
-	}); 
-	//******************************************
-
 
 }(jQuery, this, document));
 ;
@@ -53118,7 +53161,7 @@ S2.define('jquery.select2',[
 
         new     : ['far fa-window-maximize fa-inside-circle2', 'far fa-circle'],
 
-        close   : ['fas fa-circle back', 'far fa-times-circle middle', 'fas fa-times-circle front']
+        close   : ['fas fa-circle back', 'far fa-times-circle middle', 'far fa-circle front']
     };
 
     //mandatoryHeaderIconClass = mandatory class-names and title for the different icons on the header

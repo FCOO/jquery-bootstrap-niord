@@ -321,14 +321,14 @@
         }
         //*******************************************************************************
         function _getMomentFormated( m, id, defaultMethod ){
-            var vfFormatId = ns.options.vfFormatId[id],
-                $result = $('<span/>');
+            var vfFormatId = ns.options.vfFormatId[id];
             if (vfFormatId)
-                $result.vfValueFormat( m, vfFormatId );
+                return {vfFormat: vfFormatId, vfValue: m }
             else
-                $result.text( m.tzMoment()[defaultMethod]() );
-            return $result;
+                return $('<span/>').text( m.tzMoment()[defaultMethod]() );
         }
+
+
         //*******************************************************************************
         function getDate( m )         { return _getMomentFormated( m, 'date',         'dateFormat' ); }
         function getDateWeekday( m )  { return _getMomentFormated( m, 'date_weekday', 'dateFormat' ); }
@@ -406,9 +406,9 @@
                                 fixedWidth   : true
                             },
                             columns: [
-                                {id: 'date',  header: {text: {da:'Dato',  en:'Date' }} },
-                                {id: 'start', header: {text: options.fullDate ? {da:'Start kl.', en:'Start Hour'} : {da:'Start', en:'Start' } } },
-                                {id: 'end',   header: {text: options.fullDate ? {da:'Slut kl.',  en:'End Hour'  } : {da:'Slut',  en:'End'   } } },
+                                {id: 'date',                   header: {text: {da:'Dato',  en:'Date' }} },
+                                {id: 'start', align: 'center', header: {text: options.fullDate ? {da:'Start kl.', en:'Start Hour'} : {da:'Start', en:'Start' } } },
+                                {id: 'end',   align: 'center', header: {text: options.fullDate ? {da:'Slut kl.',  en:'End Hour'  } : {da:'Slut',  en:'End'   } } },
                             ]
                         };
 
