@@ -323,7 +323,7 @@
         function _getMomentFormated( m, id, defaultMethod ){
             var vfFormatId = ns.options.vfFormatId[id];
             if (vfFormatId)
-                return {vfFormat: vfFormatId, vfValue: m }
+                return {vfFormat: vfFormatId, vfValue: m };
             else
                 return $('<span/>').text( m.tzMoment()[defaultMethod]() );
         }
