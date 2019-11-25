@@ -120,13 +120,20 @@
     var defaultPartIdList   = ['REFERENCE', 'CATEGORY', 'TIME', 'DETAILS', 'PROHIBITION', 'SIGNALS', 'NOTE', 'ATTACHMENT', 'AREA', 'CHART', 'PUBLICATION', 'SOURCE'],
         fullPartIdList      = ['MAP'].concat(defaultPartIdList);
 
-    //messagesAsModal: Create and open a modal-window with all messages, filtered and sorted
-/*TODO
+    //Link to list of message = Messages.asModal: Create and open a modal-window with all messages, filtered and sorted
+    var currentMessages = null;
     function messagesAsModal(){
-        //TODO: View modal with all messages
-        //TEST: console.log('messagesAsModal', $(this).data('niord-link-id'), $(this).data('niord-link-value'));
+        var $this    = $(this),
+            messages = $this.data('niord-link-messages');
+
+        messages.asModal({
+            filterBy: {
+                listId: $this.data('niord-link-id'),
+                objId : $this.data('niord-link-value')
+            }
+        });
     }
-*/
+
 
     //trim(str) trim str for leading and tail space and punctuation
     function trim( str ){
@@ -202,15 +209,16 @@
                 text: text,
                 textClass: 'text-nowrap'
             };
-/* TODO: Include when message-list is implemented
-        if (linkId && linkValue){
+
+        if (linkId && linkValue && currentMessages && currentMessages.asModal){
             result.link = messagesAsModal;
             result.textData = {
-                'niord-link-id'   : linkId,
-                'niord-link-value': linkValue
+                'niord-link-id'      : linkId,
+                'niord-link-value'   : linkValue,
+                'niord-link-messages': currentMessages
             };
         }
-*/
+
         if (postText)
             result = [result, postText];
 
@@ -304,6 +312,8 @@
             partIsOpen = false,
             messageContent = [],
             addPart, openPart, bsPart, list;
+
+        currentMessages = this.messages;
 
         //*******************************************************************************
         function bsPartAsParentList(listId, childrenList, parent){
@@ -621,7 +631,7 @@
                     return false;
             }
         });
-
+        currentMessages = null;
         return $.extend({type: 'accordion',list: messageContent }, resultOptions || {});
     }; //end of ns.Message.prototype.bsAccordionOptions
 
@@ -733,7 +743,45 @@
         return this.bsModal;
     };
 
-} (jQuery, i18next, this, document));
+
+    /***********************************************************
+    ************************************************************
+    Messages
+    ************************************************************
+    ***********************************************************/
+
+    /******************************************************
+    Messages.asModal
+    ******************************************************/
+    ns.Messages.prototype.asModal_MANGLER = function(){
+//    ns.Messages.prototype.asModal = function(modalOptions){
+  /*
+        var listId = modalOptions.filterBy.listId,
+            objId  = modalOptions.filterBy.objId;
+
+        //console.log('messagesAsModal', messages, $(this).data('niord-link-id'), $(this).data('niord-link-value'), $(this).data('niord-link-messages'));
+var count = 0;
+        $.each(this.childList, function(index, message){
+//            console.log(message);//, message[listId+'List']);
+            $.each( message.getList(listId), function( index, obj ){
+                if (obj.id == objId){
+                    console.log('FOUND', message.getList(listId));
+                    count++;
+                    return false;
+                }
+            });
+        });
+console.log('COUNT', count);
+
+console.log( 'objId', objId );
+console.log( 'listId', listId );
+console.log( this.getCategory( objId ) );
+
+console.log( this );
+*/
+    };
+
+} (jQuery, this.i18next, this, document));
 ;
 /****************************************************************************
 	jquery-bootstrap-niord-publications.js,
@@ -837,4 +885,4 @@
         };
     };
 
-} (jQuery, i18next, this, document));
+} (jQuery, this.i18next, this, document));

@@ -100,4 +100,4 @@
         };
     };
 
-} (jQuery, i18next, this, document));
+} (jQuery, this.i18next, this, document));
