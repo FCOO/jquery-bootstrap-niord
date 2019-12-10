@@ -117,3 +117,5 @@ $time-color-width: 4px;
     }
 }
 
+//Special class to hide firat column of a table
+table.hide-first-column tr td:first-child { display: none; }

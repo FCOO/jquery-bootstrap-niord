@@ -65,3 +65,6 @@
 
 .table.time-period tbody tr.end-after-now td:last-child {
   box-shadow: inset -4px 0px 0px 0px #4D72B8; }
+
+table.hide-first-column tr td:first-child {
+  display: none; }

@@ -104,7 +104,10 @@
         'AREA'       : {da: 'Område',        en:'Area'         },
         'CHART'      : {da: 'Søkort',        en:'Charts'       },
         'PUBLICATION': {da: 'Publikationer', en:'Publications' },
-        'SOURCE'     : {da: 'Kilde',         en:'Source'       }
+        'SOURCE'     : {da: 'Kilde',         en:'Source'       },
+
+        'SELECT_AREA'    : {da: 'Vælg område',   en:'Select Area'     },
+        'SELECT_CATEGORY': {da: 'Vælg kategori', en:'Select Category' },
     });
 
     //Translate reference types
@@ -116,24 +119,55 @@
         UPDATE              : {da:'(Ajourført gentagelse)',   en:'(Updated repetition)'         }
     });
 
+    //Translate status types
+    i18next.addPhrases('niord', {
+        DRAFT       : {da:'Udkast', en:'Draft'},
+        VERIFIED    : {da:'Bekræftet', en:'Verified'},
+        //PUBLISHED   : Is not shown
+        PUBLISHED   : {da:'PUB DK', en:'PUB EN'},
+        EXPIRED     : {da:'Udløbet', en:'Expired'},
+        CANCELLED   : {da:'Annulleret', en:'Cancelled'},
+        DELETED     : {da:'Afmeldt', en:'Deleted'},
+    });
+
+    //Translate filter by
+    i18next.addPhrases('niord', {
+        filter_header   : {da:'Filtreret efter', en:'Filtered by'},
+        filter_domainId : {da:'Type', en:'Type'},
+        filter_area     : {da:'Område', en:'Area'},
+        filter_chart    : {da:'Søkort', en:'Chart'},
+        filter_category : {da:'Kategori', en:'Category'},
+    });
+
     //List of ids for different type of message-part or group of info. 'MAP' is used internally
     var defaultPartIdList   = ['REFERENCE', 'CATEGORY', 'TIME', 'DETAILS', 'PROHIBITION', 'SIGNALS', 'NOTE', 'ATTACHMENT', 'AREA', 'CHART', 'PUBLICATION', 'SOURCE'],
         fullPartIdList      = ['MAP'].concat(defaultPartIdList);
 
-    //Link to list of message = Messages.asModal: Create and open a modal-window with all messages, filtered and sorted
     var currentMessages = null;
+
+    //Link to list of message = Messages.asModal: Create and open a modal-window with all messages, filtered and sorted,
+    //OR
+    //Link to a message = Message.asModal: Check, load and add message to history-list
     function messagesAsModal(){
-        var $this    = $(this),
-            messages = $this.data('niord-link-messages');
 
-        messages.asModal({
-            filterBy: {
-                listId: $this.data('niord-link-id'),
-                objId : $this.data('niord-link-value')
-            }
-        });
+        var $this        = $(this),
+            messages     = $this.data('niord-link-messages'),
+            linkId       = $this.data('niord-link-id'),
+            linkValue    = $this.data('niord-link-value'),
+            modalOptions;
+
+        if (linkId == 'message')
+                messages.messageAsModal(linkValue);
+        else {
+            //Close any message-modal
+            if (messages.bsModalMessage)
+                messages.bsModalMessage._close();
+
+            modalOptions = {filterOptions:{}};
+            modalOptions.filterOptions[linkId] = linkValue;
+            messages.asModal(modalOptions);
+        }
     }
-
 
     //trim(str) trim str for leading and tail space and punctuation
     function trim( str ){
@@ -175,6 +209,13 @@
             fixedContentBoldTextClass = fixedContentTextClass + ' font-weight-bold',
             tempResult = [],
             result = [];
+
+        if (this.status && (this.status != 'PUBLISHED'))
+            tempResult.push({
+                text: 'niord:'+ this.status,
+                textClass: fixedContentBoldTextClass + ' text-uppercase text-danger'
+            });
+
         switch (size){
             case 'SMALL':
                 tempResult.push(
@@ -190,7 +231,8 @@
                 );
                 break;
             case 'LARGE':
-                tempResult.push({text: this.title, textClass: fixedContentBoldTextClass});
+                tempResult.push({text: this.title, textClass: fixedContentBoldTextClass}
+                );
                 break;
         }
         $.each( tempResult, function( index, obj ){
@@ -210,7 +252,7 @@
                 textClass: 'text-nowrap'
             };
 
-        if (linkId && linkValue && currentMessages && currentMessages.asModal){
+        if (linkId && linkValue && currentMessages){
             result.link = messagesAsModal;
             result.textData = {
                 'niord-link-id'      : linkId,
@@ -278,6 +320,13 @@
         );
     };
 
+    ns.Category.prototype.bsObject = function(){
+        return linkToModal(
+            this.name,
+            'category', this.id
+        );
+    };
+
     ns.Reference.prototype.bsObject = function(){
         return linkToModal(
             this.messageId,
@@ -291,7 +340,7 @@
     ns.Message.prototype.getList = function(id){
         return this[id.toLowerCase()+'List'];
     };
-    ns.Message.prototype.has = function( id ){ //return true;
+    ns.Message.prototype.has = function( id ){
         return this.getList(id) && this.getList(id).length;
     };
     ns.Message.prototype.each = function( id, func ){
@@ -388,10 +437,10 @@
 
                 //****************************
                 case 'CATEGORY':
-                    if (hasPart && (_this.domainId == 'NW')){
+                    if (hasPart && (_this.domainId == 'nw')){
                         bsPartAsParentList(
                             'category', null,
-                            linkToModal('niord:'+_this.domainId.toLowerCase(), 'domain', _this.domainId)
+                            linkToModal('niord:'+_this.domainId, 'domainId', _this.domainId)
                         );
                     }
                     break;
@@ -662,6 +711,76 @@
     };
 
     /******************************************************
+    Message.asTableRow
+    Return options to create a row in a table
+    small == true => One column table, false => multi colunm
+    ******************************************************/
+    ns.Message.prototype.asTableRow = function(){
+        return {
+            id      : this.id,
+            type    : this.mainType,
+            shortId : this.shortId || this.domainId.toUpperCase(),
+            date    : this.publishDateFrom,
+            area    : this.areaTitle,
+            title   : this.shortTitle,
+        };
+    };
+
+    /******************************************************
+    Message.filter
+    Return true if the message is included in the filterOptions =
+    {type, area, chart, category}
+    ******************************************************/
+    ns.Message.prototype.filter = function(filterOptions){
+        //****************************************
+        function isInList(id, list){
+            if (!id || (id == 'ALL')) return true;
+            var result = false;
+            $.each(list, function(index, obj){
+                if (obj.id == id)
+                    result = true;
+                else {
+                    var nextObj = obj.parent;
+                    while (nextObj){
+                        if (nextObj.id == id){
+                            result = true;
+                            nextObj = null;
+                        }
+                        else
+                            nextObj = nextObj.parent;
+                    }
+                }
+                if (result) return false;
+            });
+            return result;
+        }
+        //****************************************
+
+        var _this = this,
+            result = true;
+
+        filterOptions = filterOptions || {};
+
+        //Only include message with status=PUBLISHED
+        if (this.status != 'PUBLISHED')
+            return false;
+
+        //type vs this.domainId
+        if (filterOptions.domainId && (filterOptions.domainId != 'ALL') && (this.domainId.toUpperCase() != filterOptions.domainId.toUpperCase()))
+            result = false;
+
+        if (result)
+            $.each(['area', 'chart', 'category'], function(index, listId){
+                if (!isInList(filterOptions[listId], _this[listId+'List'])){
+                    result = false;
+                    return false;
+                }
+            });
+
+        return result;
+    };
+
+    /******************************************************
     Message.bsModalOptions
     Return options to create a small version for $.bsModal
     ******************************************************/
@@ -707,8 +826,10 @@
 
                 flexWidth   : true,
 
-                static               : true,
+                static               : false,
                 modalContentClassName: 'niord-modal-content',
+
+                show    : false,
             };
 
         //Extend the modal if ns.options.normalModalExtendable is set
@@ -731,54 +852,27 @@
     Message.asModalSmall
     ******************************************************/
     ns.Message.prototype.asModalSmall = function(modalOptions){
-        this.bsModal = $.bsModal( this.bsModalSmallOptions(modalOptions) );
-        return this.bsModal;
+        return this._asModal( this.bsModalSmallOptions(modalOptions) );
     };
 
     /******************************************************
     Message.asModal
     ******************************************************/
     ns.Message.prototype.asModal = function(modalOptions){
-        this.bsModal = $.bsModal( this.bsModalOptions(modalOptions) );
-        return this.bsModal;
+        return this._asModal( this.bsModalOptions(modalOptions) );
     };
 
-
-    /***********************************************************
-    ************************************************************
-    Messages
-    ************************************************************
-    ***********************************************************/
-
     /******************************************************
-    Messages.asModal
+    Message._asModal
     ******************************************************/
-    ns.Messages.prototype.asModal_MANGLER = function(){
-//    ns.Messages.prototype.asModal = function(modalOptions){
-  /*
-        var listId = modalOptions.filterBy.listId,
-            objId  = modalOptions.filterBy.objId;
+    ns.Message.prototype._asModal = function(options){
+        this.messages.bsModalMessage =
+            this.messages.bsModalMessage ?
+            this.messages.bsModalMessage.update(options) :
+            $.bsModal( options );
 
-        //console.log('messagesAsModal', messages, $(this).data('niord-link-id'), $(this).data('niord-link-value'), $(this).data('niord-link-messages'));
-var count = 0;
-        $.each(this.childList, function(index, message){
-//            console.log(message);//, message[listId+'List']);
-            $.each( message.getList(listId), function( index, obj ){
-                if (obj.id == objId){
-                    console.log('FOUND', message.getList(listId));
-                    count++;
-                    return false;
-                }
-            });
-        });
-console.log('COUNT', count);
-
-console.log( 'objId', objId );
-console.log( 'listId', listId );
-console.log( this.getCategory( objId ) );
-
-console.log( this );
-*/
+        this.messages.bsModalMessage.show();
+        return this.messages.bsModalMessage;
     };
 
 } (jQuery, this.i18next, this, document));
