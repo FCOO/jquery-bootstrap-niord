@@ -32941,6 +32941,135 @@ if (typeof define === 'function' && define.amd) {
 })(window, document, 'Hammer');
 
 ;
+/****************************************************************************
+	history.js,
+
+	(c) 2019, FCOO
+
+	https://github.com/FCOO/history.js
+	https://github.com/FCOO
+
+****************************************************************************/
+
+(function ($/*, window, document, undefined*/) {
+	"use strict";
+
+	var ns = window;
+
+	function HistoryList( options, plugin_count) {
+		this.plugin_count = plugin_count;
+
+		this.options = $.extend({
+			//Default options
+
+
+            initValue: null, //Any item or list of items to initialize the list = first item
+            action   : function(/* item, historyList */){
+                         //function to be called when a item is poped from the list using goFirst, goBack, goForward or goLast
+                     },
+
+            onUpdate : function(/*backwardAvail, forwardAvail, historyList*/){
+                          //Called when the list is updated.
+                          //backwardAvail [BOOLEAN] true if it is possible to go backwards
+                          //forwardAvail [BOOLEAN] true if it is possible to go forwards
+                       }
+
+        }, options || {} );
+
+        this.list = [];
+        this.index = -1;
+        this.lastIndex = -1;
+        this.addToList = true;
+        this.callAction = true;
+
+        if (options.initValue){
+            options.initValue = $.isArray(options.initValue) ? options.initValue : [options.initValue];
+            var _this = this;
+            $.each( options.initValue, function(index, item){
+                _this.callAction = false;
+                _this.add(item);
+            });
+        }
+
+        this._callOnUpdate();
+	}
+
+    // expose access to the constructor
+    ns.HistoryList = HistoryList;
+
+    //Extend the prototype
+	ns.HistoryList.prototype = {
+
+        add: function( item ){
+            if (this.addToList){
+                this.index++;
+                this.list.splice(this.index);
+                this.list.push(item);
+                this.lastIndex = this.list.length-1;
+            }
+
+            if (this.callAction){
+                this.callAction = false; //Prevent recursion
+                this.addToList = false;
+                this.options.action( item, this );
+                this._callOnUpdate();
+            }
+            this.callAction = true;
+            this.addToList = true;
+            return this;
+        },
+
+
+        _callOnUpdate: function(){
+            this.options.onUpdate( this.index>0, this.lastIndex > this.index, this);
+            return this;
+        },
+
+        _goto: function( deltaIndex ){
+            this.index = this.index + deltaIndex;
+            this.addToList = false;
+            return this.add( this.list[this.index] );
+        },
+
+        goFirst: function() {
+            return this.index > 0 ? this._goto(-1*this.index) : this;
+        },
+
+
+        goBack: function() {
+            return this.index > 0 ? this._goto(-1) : this;
+        },
+
+        goForward: function() {
+            return this.index < this.lastIndex ? this._goto(+1) : this;
+        },
+
+        goLast: function() {
+            return this.lastIndex > this.index ? this._goto(this.lastIndex-this.index) : this;
+        },
+
+        clearHistory: function() {
+            if (this.index > 0){
+                this.list.splice(0, this.index);
+                this.index = 0;
+                this.lastIndex = this.list.length - 1;
+                this._callOnUpdate();
+            }
+            return this;
+        },
+
+        clearFuture: function() {
+            if (this.lastIndex > this.index){
+                this.list.splice(this.index+1);
+                this.lastIndex = this.index;
+                this._callOnUpdate();
+            }
+            return this;
+        },
+
+    };
+}(jQuery, this, document));
+;
 /*!
 * jquery.inputmask.bundle.js
 * https://github.com/RobinHerbots/Inputmask
@@ -56665,6 +56794,7 @@ options
         closeIcon
         closeText
         noCloseIconOnHeader
+        historyList         - The modal gets backward and forward icons in header to go backward and forward in the historyList. See demo and https://github.com/fcoo/history.js
 
     **********************************************************/
     var modalId = 0,
@@ -57402,6 +57532,20 @@ options
     };
 
 
+
+    //bsModal_updateIcons_historylist - Updates backward- and forward-icons in modal-header according to status of historyList
+    function bsModal_updateIcons_historylist( backAvail, forwardAvail, historyList ){
+        if (historyList.lastIndex <= 0) return;
+
+        //Show icons
+        this.getHeaderIcon('back').css('visibility', 'initial');
+        this.getHeaderIcon('forward').css('visibility', 'initial');
+
+        //Update icons
+        this.setHeaderIconEnabled('back'   , !backAvail );
+        this.setHeaderIconEnabled('forward', !forwardAvail );
+    }
+
     /******************************************************
     bsModal
     ******************************************************/
@@ -57451,6 +57595,15 @@ options
         options.icons = options.icons || {};
         options.icons.close = { onClick: $.proxy( bsModal_prototype.close, $result) };
 
+        //Add backward- and forward-icons and update-function if modal is connected to a historyList
+        if (options.historyList){
+            options.icons.back    = {onClick: function(){ options.historyList.goBack();    }};
+            options.icons.forward = {onClick: function(){ options.historyList.goForward(); }};
+
+            options.historyList.options.onUpdate = $.proxy( bsModal_updateIcons_historylist, $result );
+        }
+
+        //Create modal content
         $modalDialog._bsModalContent( options );
         $result.data('bsModalDialog', $modalDialog);
 
@@ -57466,6 +57619,13 @@ options
            show	    :   false                               //  boolean	            true	Shows the modal when initialized.
         });
         $result.bsModal = $modalDialog.bsModal;
+
+        if (options.historyList){
+            //Hide back- and forward-icons
+            $result.getHeaderIcon('back').css('visibility', 'hidden');
+            $result.getHeaderIcon('forward').css('visibility', 'hidden');
+        }
+
         $result.on({
             'show.bs.modal'  : $.proxy(show_bs_modal, $result),//show_bs_modal,
             'shown.bs.modal' : shown_bs_modal,
@@ -58471,6 +58631,7 @@ options
                 $('<option/>')
                     .text(itemOptions.id)
                     .prop('selected', itemOptions.id == options.selectedId)
+                    .prop('title', ' ')  //Must be not-empty
                     .appendTo($currentParent);
             }
             else
@@ -58944,6 +59105,8 @@ TODO:   truncate     : false. If true the column will be truncated. Normally onl
             this.find('tbody tr').removeClass('filter-out');
             if (!dontSort)
                 this._resort();
+            if (this.setHeaderHeight)
+                this.setHeaderHeight();
             return this;
         },
 
@@ -58987,6 +59150,8 @@ TODO:   truncate     : false. If true the column will be truncated. Normally onl
             //Sort table again
             this._resort();
 
+            if (this.setHeaderHeight)
+                this.setHeaderHeight();
             return this;
         },
 
@@ -59029,7 +59194,7 @@ TODO:   truncate     : false. If true the column will be truncated. Normally onl
 
             if (showHeader){
                 //Using timeout to wait for the browser to update DOM and get height of the header
-                var setHeaderHeight = function(){
+                var setHeaderHeight = this.setHeaderHeight = function(){
                         var height = $tableWithHeader.outerHeight();
                         if (height <= 0){
                             count--;

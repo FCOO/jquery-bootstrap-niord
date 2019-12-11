@@ -159,9 +159,9 @@
         if (linkId == 'message')
                 messages.messageAsModal(linkValue);
         else {
-            //Close any message-modal
-            if (messages.bsModalMessage)
-                messages.bsModalMessage._close();
+//HER            //Close any message-modal
+//HER            if (messages.bsModalMessage)
+//HER                messages.bsModalMessage._close();
 
             modalOptions = {filterOptions:{}};
             modalOptions.filterOptions[linkId] = linkValue;
@@ -850,9 +850,10 @@
 
     /******************************************************
     Message.asModalSmall
+    TODO - Not used at the moment => remove it ?
     ******************************************************/
     ns.Message.prototype.asModalSmall = function(modalOptions){
-        return this._asModal( this.bsModalSmallOptions(modalOptions) );
+        return this._asModal( this.bsModalSmallOptions(modalOptions), true );
     };
 
     /******************************************************
@@ -865,13 +866,51 @@
     /******************************************************
     Message._asModal
     ******************************************************/
-    ns.Message.prototype._asModal = function(options){
-        this.messages.bsModalMessage =
-            this.messages.bsModalMessage ?
-            this.messages.bsModalMessage.update(options) :
-            $.bsModal( options );
+    ns.Message.prototype._asModal = function(options, isSmall){
+        var _messages = this.messages;
 
-        this.messages.bsModalMessage.show();
+        _messages.messageModalIsSmall = isSmall;
+
+        var historyList = _messages.historyList = _messages.historyList ||
+            new window.HistoryList({
+                action: function( id ){
+                    var message = _messages.getMessage(id);
+                    _messages.messageModalIsSmall ? message.asModalSmall() : message.asModal();
+                }
+            });
+
+
+        options.historyList = historyList;
+        historyList.callAction = false;
+        historyList.add( this.id );
+        historyList._callOnUpdate();
+
+        //First modal => add list-button
+        if (!_messages.bsModalMessage)
+            options.buttons = [{
+                icon   : 'fa-th-list',
+                text   : {da:'Vis alle', en:'Show all'},
+                onClick: $.proxy( _messages.asModal, _messages )
+            }];
+
+        _messages.bsModalMessage =
+            _messages.bsModalMessage ?
+                _messages.bsModalMessage.update(options) :
+                $.bsModal( options );
+
+        _messages.bsModalMessage.show();
+
+        //Find last button = "Show list"
+        if (!_messages.showMessagesButton){
+            var buttons = _messages.bsModalMessage.bsModal.$buttons;
+            _messages.showMessagesButton = buttons[buttons.length-1];
+        }
+
+        //Hide the "Show list"-button if messages-list is already visible
+        _messages.showMessagesButton.toggle(
+            !(_messages.bsModal && _messages.bsModal.hasClass('show'))
+        );
+
         return this.messages.bsModalMessage;
     };
 
@@ -971,6 +1010,12 @@
     ******************************************************/
     ns.Messages.prototype.asModal = function(modalOptions){
         var _this = this;
+
+        //Close any message-modal
+        if (this.bsModalMessage)
+            this.bsModalMessage.close();
+//HER            this.bsModalMessage._close();
+
 
         if (!this.bsModal){
             //Check screen size and select between small and normal size table

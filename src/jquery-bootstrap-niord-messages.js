@@ -93,6 +93,12 @@
     ns.Messages.prototype.asModal = function(modalOptions){
         var _this = this;
 
+        //Close any message-modal
+        if (this.bsModalMessage)
+            this.bsModalMessage.close();
+//HER            this.bsModalMessage._close();
+
+
         if (!this.bsModal){
             //Check screen size and select between small and normal size table
             var displayInSmallTable = !ns.options.isSet('normalModalExtendable');

@@ -72,7 +72,7 @@
         window.Niord.options.vfFormatId.date_weekday = 'TEST_DATE_WEEKDAY';
         window.Niord.options.vfFormatId.date = 'TEST_DATE';
 
-        window.Niord.options.normalModalExtendable = false;
+        window.Niord.options.normalModalExtendable = !window.bsIsTouch;
 
         window.Niord.options.createMap = function($element, message){
             $element.text('Antal geoJSON = ' + message.geoJSON.features.length);
@@ -170,7 +170,7 @@
 
             });
 
-        Niord.messages.asModal();
+//        Niord.messages.asModal();
 
         } //End of display
         //***************************************************
@@ -178,6 +178,7 @@
         var $body = $('body'),
             selectedArea = null,
             selectedCat = null;
+/*
         $.bsButton({
             text: {da: 'Vælg område', en:'Select area'},
             onClick: function(){
@@ -196,6 +197,12 @@
                 );
             }
         }).appendTo($body);
+*/
+        $.bsButton({
+            text: {da: 'Vis én', en:'Show one'},
+            onClick: function(){ Niord.messages.messageAsModal('1d40e475-5d86-4f3e-a6d8-258033e064eb'); }
+        }).appendTo($body);
+
         $.bsButton({
             text: {da: 'Vis alle', en:'Show all'},
             onClick: function(){ Niord.messages.asModal(); }
