@@ -54769,16 +54769,18 @@ module.exports = g;
         if ($this.children('.collapse.show').length)
             $this.addClass('show');
     }
+
     function card_onHidden(){
         var $this = $(this);
         if (!$this.children('.collapse.show').length)
             $this.removeClass('show');
+        accordion_onChange($this);
     }
-
 
     //card_onShow_close_siblings: Close all open siblings when card is shown
     function card_onShow_close_siblings(){
-        $(this).siblings('.show').children('.collapse').collapse('hide');
+        var $this = $(this);
+        $this.siblings('.show').children('.collapse').collapse('hide');
     }
 
     //card_onShown_close_siblings: Close all open siblings when card is shown BUT without animation
@@ -54789,7 +54791,17 @@ module.exports = g;
             card_onShow_close_siblings.call(this);
             $this.removeClass('no-transition');
         }
+        accordion_onChange($this);
     }
+
+    //update_status: Create a
+    function accordion_onChange($element){
+        var $accordion = $element.parents('.accordion').last(),
+            onChange = $accordion.data('accordion_onChange');
+        if (onChange)
+            onChange($accordion, $accordion.bsAccordionStatus());
+    }
+
 
     /**********************************************************
     bsAccordion( options ) - create a Bootstrap-accordion
@@ -54826,6 +54838,7 @@ module.exports = g;
                           }, options)
                );
     }
+
 
     $.bsAccordion = function( options ){
         var id = 'bsAccordion'+ accordionId++;
@@ -54868,7 +54881,7 @@ module.exports = g;
                             .on( 'shown.bs.collapse',  card_onShown )
                             .on( 'hidden.bs.collapse', card_onHidden )
                             .on( 'show.bs.collapse',   options.multiOpen ? null : card_onShow_close_siblings )
-/*HER*/                            .on( 'shown.bs.collapse',  options.multiOpen ? null : card_onShown_close_siblings )
+                            .on( 'shown.bs.collapse',  options.multiOpen ? null : card_onShown_close_siblings )
                             .appendTo( $result ),
                 headerAttr = {
                     'id'  : headerId,
@@ -54939,7 +54952,26 @@ module.exports = g;
         $result.collapse(/*options*/);
         $result.asModal = bsAccordion_asModal;
 
+        if (options.onChange){
+            $result.data('accordion_onChange', options.onChange);
+            options.onChange($result, $result.bsAccordionStatus());
+        }
+
         return $result;
+    };
+
+
+    //Extend $.fn with method to get status for an accordion open/slose status
+    $.fn.bsAccordionStatus = function(){
+        function getStatus($elem){
+            var result = [];
+            $elem.children('.card').each( function(index, elem){
+                var $elem = $(elem);
+                result[index] = $elem.hasClass('show') ? getStatus($elem.find('> .collapse > .card-block > .accordion')) : false;
+            });
+            return result.length ? result : true;
+        }
+        return getStatus(this);
     };
 
 

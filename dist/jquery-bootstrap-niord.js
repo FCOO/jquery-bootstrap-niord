@@ -354,11 +354,14 @@
     Message.bsAccordionOptions
     Return a object with options for $.fn.bsAccordion(...)
     ******************************************************/
-    ns.Message.prototype.bsAccordionOptions = function(options, resultOptions){
+    ns.Message.prototype.bsAccordionOptions = function(options, resultOptions, dontSaveOpenPart){
         options = options || {};
         var partIdList = options.partIdList || fullPartIdList,
             _this = this,
             partIsOpen = false,
+            openPartIndex = -1,
+            forceOpenPartId = dontSaveOpenPart ? '' : this.lastOpenPartId || '',
+            this_partIdList = [],
             messageContent = [],
             addPart, openPart, bsPart, list;
 
@@ -394,10 +397,10 @@
         function getDateLong( m )     { return _getMomentFormated( m, 'date_long',    'dateFormat' ); }
         function getTime( m )         { return _getMomentFormated( m, 'time',         'timeFormat' ); }
         //*******************************************************************************
+
         $.each( partIdList, function( index, partId ){
 
             var hasPart = _this.has(partId);
-
             bsPart = {
                 header : {
                     icon: ns.options.partIcon[partId]+' fa-fw',
@@ -671,8 +674,13 @@
 
 
             if (addPart){
-                if (openPart && !partIsOpen){
-                    bsPart.selected = true;
+                this_partIdList.push(partId);
+
+                if (
+                    (forceOpenPartId && (forceOpenPartId == partId)) ||
+                    (!forceOpenPartId && (openPart && !partIsOpen))
+                ){
+                    openPartIndex = messageContent.length;
                     partIsOpen = true;
                 }
                 messageContent.push( bsPart );
@@ -681,7 +689,35 @@
             }
         });
         currentMessages = null;
-        return $.extend({type: 'accordion',list: messageContent }, resultOptions || {});
+
+        if (openPartIndex > -1)
+            messageContent[openPartIndex].selected = true;
+
+        return $.extend(
+            {
+                type: 'accordion',
+                list: messageContent,
+
+                onChange: dontSaveOpenPart ? null :
+                    $.proxy(function(partIdList, $acc, status){
+
+                        //Find id of open part (card) - if any
+                        var openPartId = '';
+                        $.each(partIdList, function(index, partId){
+                            if (status[index]){
+                                openPartId = partId;
+                                return false;
+                            }
+                        });
+
+                        this.lastOpenPartId = openPartId || 'NONE';
+
+                    }, _this, this_partIdList)
+            },
+            resultOptions || {}
+        );
+
+
     }; //end of ns.Message.prototype.bsAccordionOptions
 
 
@@ -781,7 +817,7 @@
     };
 
     /******************************************************
-    Message.bsModalOptions
+    Message.bsModalSmallOptions
     Return options to create a small version for $.bsModal
     ******************************************************/
     ns.Message.prototype.bsModalSmallOptions = function(modalOptions){
@@ -837,7 +873,7 @@
             result.extended = {
                 header      : this.bsHeaderOptions('LARGE'),
                 fixedContent: this.bsFixedContent('LARGE'),
-                content     : this.bsAccordionOptions({fullDate: true, largeVersion: true}, {allOpen: true, neverClose: true}),
+                content     : this.bsAccordionOptions({fullDate: true, largeVersion: true}, {allOpen: true, neverClose: true}, true),
                 footer      : true,
 
                 flexWidth   : true,
