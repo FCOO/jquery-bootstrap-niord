@@ -30,7 +30,6 @@
 
         },
 
-
         //partIcon = Font-awesome icon for header of the different parts
         partIcon: {
             MAP        : 'fa-map-marker',
@@ -76,7 +75,12 @@
         isSet: function( id ){
             var value = ns.options[id];
             return !!value && ($.isFunction(value) ? value() : !!value);
-        }
+        },
+
+        //Icons for filter and reset-buttons
+        filterIcon     : 'fa-filter',
+        resetFilterIcon: null
+
 
     }, ns.options || {} );
 
@@ -1085,8 +1089,8 @@
             var bsModalOptions = {
                 header     : '',
                 buttons    : [
-                    {_icon: 'fa-filter', text:{da:'Nulstil', en:'Reset'}, onClick: $.proxy(this.resetFilter, this)},
-                    {icon: 'fa-filter', text:{da:'Filter', en:'Filter'}, onClick: $.proxy(this.filterAsModalForm, this)}
+                    {icon: ns.options.resetFilterIcon, text:{da:'Nulstil', en:'Reset'}, onClick: $.proxy(this.resetFilter, this)},
+                    {icon: ns.options.filterIcon,      text:{da:'Filter', en:'Filter'}, onClick: $.proxy(this.filterAsModalForm, this)}
                 ],
                 flexWidth  : !displayInSmallTable,
                 extraWidth : !displayInSmallTable,
@@ -1198,11 +1202,12 @@
 
             var modalEditOptions = {
                     header: {
-                        icon: 'fa-filter',
+                        icon: ns.options.filterIcon,
                         text: {da:'Filter', en:'Filter'},
                     },
                     closeWithoutWarning: true,
                     buttons:[{
+                        icon   : ns.options.resetFilterIcon,
                         text   : {da:'Reset', en:'Reset'},
                         onClick: $.proxy( function(){
                                      this.filterBsModalForm.setValues({
@@ -1294,7 +1299,7 @@
         function hasValue(value){ return (value && (value != 'ALL')); }
 
         var _this         = this,
-            textArray     = [{icon: 'fa-filter'}],
+            textArray     = [{icon: ns.options.filterIcon}],
             filterOptions = this.filterOptions,
             filterExist   = false;
 

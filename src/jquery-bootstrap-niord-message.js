@@ -30,7 +30,6 @@
 
         },
 
-
         //partIcon = Font-awesome icon for header of the different parts
         partIcon: {
             MAP        : 'fa-map-marker',
@@ -76,7 +75,12 @@
         isSet: function( id ){
             var value = ns.options[id];
             return !!value && ($.isFunction(value) ? value() : !!value);
-        }
+        },
+
+        //Icons for filter and reset-buttons
+        filterIcon     : 'fa-filter',
+        resetFilterIcon: null
+
 
     }, ns.options || {} );
 
