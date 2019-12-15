@@ -1093,7 +1093,7 @@
                     {icon: ns.options.filterIcon,      text:{da:'Filter', en:'Filter'}, onClick: $.proxy(this.filterAsModalForm, this)}
                 ],
                 flexWidth  : !displayInSmallTable,
-                extraWidth : !displayInSmallTable,
+                megaWidth  : !displayInSmallTable,
                 static     : true,
                 show       : false,
                 footer     : {text: '&nbsp;'}
