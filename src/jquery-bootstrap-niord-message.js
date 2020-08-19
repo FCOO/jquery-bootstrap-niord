@@ -756,12 +756,36 @@
     small == true => One column table, false => multi colunm
     ******************************************************/
     ns.Message.prototype.asTableRow = function(){
+        /*
+        The area comes in tree different versions:
+        normal = this.areaTitle                       Eq. "Danmark-Skagerrak"
+        full   = this.areaTitle  + this.subAreaTitle. Eq. Danmark-Skagerrak-Ålbæk Bugt
+        sub    = this.subAreaTitle.                   Eq. Ålbæk Bugt
+        */
+
+        //Create fulle area text
+        var fullAreaTitle = {
+                da: this.areaTitle.da || '',
+                en: this.areaTitle.en || this.areaTitle.da
+            };
+        if (this.subAreaTitle){
+            fullAreaTitle.da = fullAreaTitle.da + ' - ' + this.subAreaTitle.da;
+            fullAreaTitle.en = fullAreaTitle.en + ' - ' + this.subAreaTitle.en;
+        }
+
+
         return {
             id      : this.id,
             type    : this.mainType,
             shortId : this.shortId || this.domainId.toUpperCase(),
             date    : this.publishDateFrom,
-            area    : this.areaTitle,
+//HER            area    : this.areaTitle,
+            area    : {
+                normal: this.areaTitle,
+                full  : fullAreaTitle,
+                sub   : this.subAreaTitle
+            },
+
             title   : this.shortTitle,
         };
     };

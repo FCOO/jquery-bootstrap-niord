@@ -756,12 +756,36 @@
     small == true => One column table, false => multi colunm
     ******************************************************/
     ns.Message.prototype.asTableRow = function(){
+        /*
+        The area comes in tree different versions:
+        normal = this.areaTitle                       Eq. "Danmark-Skagerrak"
+        full   = this.areaTitle  + this.subAreaTitle. Eq. Danmark-Skagerrak-Ålbæk Bugt
+        sub    = this.subAreaTitle.                   Eq. Ålbæk Bugt
+        */
+
+        //Create fulle area text
+        var fullAreaTitle = {
+                da: this.areaTitle.da || '',
+                en: this.areaTitle.en || this.areaTitle.da
+            };
+        if (this.subAreaTitle){
+            fullAreaTitle.da = fullAreaTitle.da + ' - ' + this.subAreaTitle.da;
+            fullAreaTitle.en = fullAreaTitle.en + ' - ' + this.subAreaTitle.en;
+        }
+
+
         return {
             id      : this.id,
             type    : this.mainType,
             shortId : this.shortId || this.domainId.toUpperCase(),
             date    : this.publishDateFrom,
-            area    : this.areaTitle,
+//HER            area    : this.areaTitle,
+            area    : {
+                normal: this.areaTitle,
+                full  : fullAreaTitle,
+                sub   : this.subAreaTitle
+            },
+
             title   : this.shortTitle,
         };
     };
@@ -1054,8 +1078,6 @@
         //Close any message-modal
         if (this.bsModalMessage)
             this.bsModalMessage.close();
-//HER            this.bsModalMessage._close();
-
 
         if (!this.bsModal){
             //Check screen size and select between small and normal size table
@@ -1068,6 +1090,8 @@
                 allowReselect    : true,
                 onChange         : $.proxy(this.messageAsModal, this ),
 
+
+
                 columns: displayInSmallTable ?
                     [{
                         id: 'id', noWrap: false, header: 'No shown', createContent: $.proxy(this._createTableCellContent, this),
@@ -1076,7 +1100,25 @@
                     [
                         { id: 'shortId', noWrap: true,   header: 'Id', align: 'center' },
                         { id: 'date',    noWrap: true,   header: {da:'Dato', en:'Date'},   align: 'center', vfFormat: ns.options.vfFormatId.date, sortable: true, sortBy:'moment_date', sortDefault: true/*'desc'*/},
-                        { id: 'area',    noWrap: false,  header: {text:'niord:AREA'},      align: 'left',   sortable: true, sortHeader: true, _sortIndex:1000},
+                        { id: 'area',    noWrap: false,  header: {text:'niord:AREA'},      align: 'left',
+                            //Options for sorting by area
+                            sortable: true,
+                            sortHeader: true,
+                            _sortIndex:1000,
+                            updateAfterSorting: true,
+
+                            //Sort by full area-title
+                            getSortContent: function(content){ return content.full; },
+
+                            //Display only sub-area when list is sorted by area
+                            createContent: function(content, $td, sortBy){
+                                $td._bsAddHtml(sortBy ? content.sub : content.full);
+                            },
+
+                            //Use default area-title as header for sorted groups
+                            getHeaderContent: function(content){ return content.normal; },
+                            createHeaderContent: function(content, $span){ $span._bsAddHtml(content); },
+                        },
 
                         { id: 'title',   noWrap: false,  header: {da:'Titel', en:'Title'}, align: 'left',   _sortable: true, _sortHeader: true, _sortIndex:1000},
                     ],
@@ -1084,7 +1126,9 @@
 
             //Create table and dd data
             this.bsTable = $.bsTable(this.bsTableOptions);
-            $.each(this.messages, function(id, message){ _this.bsTable.addRow( message.asTableRow() ); });
+            $.each(this.messages, function(id, message){
+                _this.bsTable.addRow( message.asTableRow() );
+            });
 
             var bsModalOptions = {
                 header     : '',
@@ -1148,7 +1192,7 @@
             ._bsAddHtml('&nbsp;-&nbsp;')
             ._bsAddHtml({vfFormat: ns.options.vfFormatId.date, vfValue: tableRows.date})
             .append('<br>')
-            ._bsAddHtml(tableRows.area)
+            ._bsAddHtml(tableRows.area.full)
             .append('<br>')
             ._bsAddHtml({text: tableRows.title, textClass:'font-weight-bold'});
     },
