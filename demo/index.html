@@ -47,7 +47,8 @@
                 console.log('New language=',i18next.language);
 
                 $('*').localize();
-                window.theModal.show();
+                if (window.theModal)
+                    window.theModal.show();
             }
         });
 
@@ -89,8 +90,9 @@
 */
 
         Promise.defaultErrorHandler = function( reason, url ){
-            console.log(reason, url);
+            console.log('Default Error', reason, url);
         };
+
 
         var $body = $('body'); var found = false; test = true;
 
@@ -215,6 +217,7 @@
 
 
         window.Niord.getMessages('', display);
+        window.Niord.getPublications(function(data){ console.log('Publications=', data); });
 
 
 	</script>
