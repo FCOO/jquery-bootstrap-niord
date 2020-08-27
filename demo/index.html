@@ -80,6 +80,12 @@
 
             //function to create a map inside $element and displaying the geoJSONs in geoJSONList
         };
+
+        window.Niord.options.onClickCoordinate  = function(coord, text, message){
+            latLngFormat.setFormat(window.latLngFormat.LATLNGFORMAT_DMM);
+            $.bsNoty({text:text+ '<br>'+ latLngFormat(coord[1], coord[0]).format()});
+
+        }
 /*
         moment.sfAddTimezone({id:'Pacific/Honolulu'});
         moment.sfSetFormat({ timezone: 'Pacific/Honolulu' });
@@ -202,7 +208,10 @@
 */
         $.bsButton({
             text: {da: 'Vis én', en:'Show one'},
-            onClick: function(){ Niord.messages.messageAsModal('1d40e475-5d86-4f3e-a6d8-258033e064eb'); }
+            onClick: function(){
+                console.log(Niord.getMessage('7589edb9-ba97-4b98-90f2-f49b4bb21f4f') );
+                Niord.messages.messageAsModal('7589edb9-ba97-4b98-90f2-f49b4bb21f4f');
+            }
         }).appendTo($body);
 
         $.bsButton({

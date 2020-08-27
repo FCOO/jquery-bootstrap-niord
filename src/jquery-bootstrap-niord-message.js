@@ -79,10 +79,25 @@
 
         //Icons for filter and reset-buttons
         filterIcon     : 'fa-filter',
-        resetFilterIcon: null
+        resetFilterIcon: null,
 
+
+        //function to be called when a coordinate in the modal is clicked
+        onClickCoordinate: null //function(coordinate, text, message)
 
     }, ns.options || {} );
+
+    //__onClickCoordinate__ = internal function used if onClickCoordinate is given
+    ns.__onClickCoordinate__ = function(elem){
+        var $elem = $(elem),
+            coordIdStr = $elem.data('coord_id'),
+            list = coordIdStr.split(' '),
+            coord = [parseFloat(list[0]), parseFloat(list[1])],
+            messId = list[2];
+
+        ns.options.onClickCoordinate(coord, $elem.text(), ns.getMessage(messId));
+    };
+
 
     //Translate the different domains and part headers
     i18next.addPhrases('niord', {
@@ -163,10 +178,6 @@
         if (linkId == 'message')
                 messages.messageAsModal(linkValue);
         else {
-//HER            //Close any message-modal
-//HER            if (messages.bsModalMessage)
-//HER                messages.bsModalMessage._close();
-
             modalOptions = {filterOptions:{}};
             modalOptions.filterOptions[linkId] = linkValue;
             messages.asModal(modalOptions);
@@ -270,6 +281,7 @@
 
         return result;
     }
+
 
     /*******************************************************************
     parentList = create a list of text/links with triangle between
@@ -400,7 +412,123 @@
         function getDateWeekday( m )  { return _getMomentFormated( m, 'date_weekday', 'dateFormat' ); }
         function getDateLong( m )     { return _getMomentFormated( m, 'date_long',    'dateFormat' ); }
         function getTime( m )         { return _getMomentFormated( m, 'time',         'timeFormat' ); }
+
         //*******************************************************************************
+        //niordCoordinatesRegExp - Return a regexp to be used to search for the text-version of a given coordinate
+        //split return {hemisphere, degrees, degreesDecimal, minutes, minutesDecimal, seconds, secondsDecimal}
+        //Niord coordinate format a la = 54° 54.716'N - 012° 03.114'E
+
+        var anySpace = '(\\s|\&nbsp\;)*';
+
+        function niordCoordinatesRegExp(coord){
+            var lat = window.latLngFormat.split( coord[1] ),
+                lng = window.latLngFormat.split( coord[0] ),
+                anySpace = '\\s*';
+
+            function regExp( values, hemisphereChar ){
+                var result = '0*' + values.degrees + '\\&deg\\;'  + anySpace; //Leading zero(s), degrees, degree-char, Any space
+                if (values.degreesDecimal){
+                    //Minuts,decimalMinut exits
+                    result += '0*' + values.minutes; //Leading zero(s), minuts
+                    if (values.minutesDecimal)
+                        result += '[\.\,]' + '0*' + values.minutesDecimal; //Decimal-char, leading zero(s), minutesDecimal
+                    result += '\''; //Minutes-char
+                }
+                result += anySpace + hemisphereChar; //Leading space and N,S,E, or W
+                return result;
+            }
+
+            return regExp( lat, lat.hemisphere == 1 ? 'N' : 'S' )  + //Latitude
+                   anySpace + '\-?' + anySpace                     + //space - space
+                   regExp( lng, lng.hemisphere == 1 ? 'E' : 'W' );  //Longitude
+        }
+
+
+        //Craete common regEx for any coordinates
+        var latDegree     = '[0-8]\\d',
+            lngDegree     = '(0\\d{2}|1[0-8]\\d)',
+            minute        = '[0-5]\\d',
+            decimalMinute = '\\d{1,3}';
+
+            var coorRegEx = new RegExp(
+                    latDegree + anySpace + '\\&deg\\;'  + anySpace + '('+minute + '([\.\,]' + decimalMinute + ')?'+'\')?' + anySpace + '[NS]' +
+                    anySpace + '\-?' + anySpace +
+                    lngDegree + anySpace + '\\&deg\\;'  + anySpace + '('+minute + '([\.\,]' + decimalMinute + ')?'+'\')?' + anySpace + '[EW]',
+                    'gi'
+                );
+
+        //*******************************************************************************
+
+        //If Niord.options.onClickCoordinate exists and it is the first time => find all coordinats text-version and wrap them inside an anchor <a>
+        if (ns.options.onClickCoordinate && !this._onClickCoordinateAdded){
+            var coordRegExList = [];
+            $.each(this.coordinatesList, function(index, coordinate) {
+                coordRegExList.push({
+                    coord: coordinate,
+                    regEx: new RegExp(niordCoordinatesRegExp( coordinate ), 'gi')
+                });
+            });
+
+            //Find any coordinates in any text in any part
+            $.each(this.partList, function(partIndex, part){
+                $.each(['details', 'subject'], function(idIndex, partId){
+                    $.each(part[partId], function(lang, text){
+                        //Find any match in text with any of the coord-mask in coordRegExList
+                        //To prevent double match each match is temporary replaced by >>>>>>>>N<<<<<<<<
+                        var replaceWith = [];
+
+                        //FIRST: Find coordinates gíven ny geoJSON
+                        $.each(coordRegExList, function(dummy, coordRegEx){
+                            text = text.replace(coordRegEx.regEx, function(str){
+                                replaceWith.push({
+                                    text: str,
+                                    coord: coordRegEx.coord
+                                });
+                                return '>>>>>>>>'+(replaceWith.length-1)+'<<<<<<<<';
+                            });
+                        });
+
+                        //SECOND: Find any coordinates
+                        text = text.replace(coorRegEx, function(str){
+                            //Detect the coordinates from the string
+                            var isNorth = str.indexOf('N') > -1,
+                                isEast = str.indexOf('E') > -1,
+                                latLng = str.split(isNorth ? 'N' : 'S');
+                            function trim(c){
+                                return (c == '.') || (c == ',') ? '.' : ' ';
+                            }
+                            function calc(str, isPositive){
+                                var list = str.split(' ');
+                                return (isPositive ? +1 : -1) * (parseInt(list[0]) + (list.length > 1 ? parseFloat(list[1]/60) : 0));
+                            }
+                            latLng[0] = calc( latLng[0].replace(/\D/g, trim).trim().replace(/\s+/g, ' '), isNorth);
+                            latLng[1] = calc( latLng[1].replace(/\D/g, trim).trim().replace(/\s+/g, ' '), isEast );
+
+
+                            replaceWith.push({
+                                text : str,
+                                coord: [latLng[1], latLng[0]]
+                            });
+                            return '>>>>>>>>'+(replaceWith.length-1)+'<<<<<<<<';
+                        });
+
+                        //Re-insert the positions with a link to
+                        $.each(replaceWith, function(index, textAndCoord){
+                            text =
+                                text.replace(
+                                    '>>>>>>>>'+index+'<<<<<<<<',
+                                    '<a data-coord_id="'+textAndCoord.coord[0]+' '+textAndCoord.coord[1]+' '+_this.id+'" href="javascript:undefined" onclick="window.Niord.__onClickCoordinate__(this)">'+textAndCoord.text+'</a>'
+                                );
+                        });
+                        _this.partList[partIndex][partId][lang] = text;
+
+                    });
+                });
+            });
+
+            this._onClickCoordinateAdded = true;
+        }
+
 
         $.each( partIdList, function( index, partId ){
 
@@ -528,7 +656,8 @@
                                     date   : eventDate.fromDate ? (options.fullDate ? getDateWeekday(eventDate.fromDate) : getDate( eventDate.fromDate )) : null,
                                     start  : eventDate.fromDate ? getTime( eventDate.fromDate ) : null,
                                     end    : endContent
-                                });
+
+                                    });
                             });
                         });
                     }
