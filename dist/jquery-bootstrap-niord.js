@@ -93,9 +93,9 @@
             coordIdStr = $elem.data('coord_id'),
             list = coordIdStr.split(' '),
             coord = [parseFloat(list[0]), parseFloat(list[1])],
-            messId = list[2];
+            messId = list.length >= 3 ? list[2] : null;
 
-        ns.options.onClickCoordinate(coord, $elem.text(), ns.getMessage(messId));
+        ns.options.onClickCoordinate(coord, $elem.text(), messId ? ns.getMessage(messId) : null);
     };
 
 
