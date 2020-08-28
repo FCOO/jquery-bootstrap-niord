@@ -148,7 +148,9 @@
             list.push(window.Niord.messages.messages["555306e4-0b0d-4d62-9a55-36ec64539aa4"]);
 */
             //console.log(list);
+
             $.each( list, function( index, message ){
+ //message.bsAccordionOptions();
 
 //message.asModal();
 
@@ -177,6 +179,7 @@
 //                console.log(message.shortTitle);//, message.title);
 
             });
+
 
 //        Niord.messages.asModal();
 
@@ -209,8 +212,8 @@
         $.bsButton({
             text: {da: 'Vis én', en:'Show one'},
             onClick: function(){
-                console.log(Niord.getMessage('93efced3-81c5-4930-90f7-353425df71b9') );
-                Niord.messages.messageAsModal('93efced3-81c5-4930-90f7-353425df71b9');
+                console.log(Niord.getMessage('82f6c3b8-f4ff-4e98-b1ef-28999828ee17') );
+                Niord.messages.messageAsModal('82f6c3b8-f4ff-4e98-b1ef-28999828ee17');
             }
         }).appendTo($body);
 

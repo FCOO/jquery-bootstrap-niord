@@ -418,7 +418,7 @@
         //split return {hemisphere, degrees, degreesDecimal, minutes, minutesDecimal, seconds, secondsDecimal}
         //Niord coordinate format a la = 54° 54.716'N - 012° 03.114'E
 
-        var anySpace = '(\\s|\\&nbsp\\;|<span>\\&nbsp\\;<\\/span>)*';
+        var anySpace = '(\\s|\\&nbsp\\;|<span>|<\\/span>|<strong>|<\\/strong>)*';
 
         function niordCoordinatesRegExp(coord){
             var lat = window.latLngFormat.split( coord[1] ),
@@ -444,17 +444,17 @@
         }
 
 
-        //Craete common regEx for any coordinates
+        //Create common regEx for any coordinates
         var latDegree     = '[0-8]\\d',
             lngDegree     = '(0\\d{2}|1[0-8]\\d)',
-            degreeChar    = '(<span>\\&deg\\;<\\/span>|<span>°<\\/span>|\\&deg\\;)',
+            degreeChar    = '(°|<span>°<\\/span>|\\&deg\\;|<span>\\&deg\\;<\\/span>)',
             minute        = '[0-5]\\d',
             decimalMinute = '\\d{1,3}';
 
             var coorRegEx = new RegExp(
-                    latDegree + anySpace + degreeChar + anySpace + '('+minute + '([\.\,]' + decimalMinute + ')?'+'\')?' + anySpace + '[NS]' +
+                    latDegree + anySpace + degreeChar + anySpace + '(' + minute + anySpace + '([\.\,]' + anySpace + decimalMinute + ')?' + anySpace + '\'' + anySpace + ')?' + anySpace + '[NS]' +
                     anySpace  + '\-?' + anySpace +
-                    lngDegree + anySpace + degreeChar + anySpace + '('+minute + '([\.\,]' + decimalMinute + ')?'+'\')?' + anySpace + '[EW]',
+                    lngDegree + anySpace + degreeChar + anySpace + '(' + minute + anySpace + '([\.\,]' + anySpace + decimalMinute + ')?' + anySpace + '\'' + anySpace + ')?' + anySpace + '[EW]',
                     'gi'
                 );
 
@@ -502,8 +502,8 @@
                                 var list = str.split(' ');
                                 return (isPositive ? +1 : -1) * (parseInt(list[0]) + (list.length > 1 ? parseFloat(list[1]/60) : 0));
                             }
-                            latLng[0] = calc( latLng[0].replace(/\D/g, trim).trim().replace(/\s+/g, ' '), isNorth);
-                            latLng[1] = calc( latLng[1].replace(/\D/g, trim).trim().replace(/\s+/g, ' '), isEast );
+                            latLng[0] = calc( latLng[0].replace(/\D/g, trim).replace(/\.\s+/g, '.').trim().replace(/\s+/g, ' '), isNorth);
+                            latLng[1] = calc( latLng[1].replace(/\D/g, trim).replace(/\.\s+/g, '.').trim().replace(/\s+/g, ' '), isEast );
 
 
                             replaceWith.push({
