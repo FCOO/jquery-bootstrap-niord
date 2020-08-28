@@ -418,7 +418,7 @@
         //split return {hemisphere, degrees, degreesDecimal, minutes, minutesDecimal, seconds, secondsDecimal}
         //Niord coordinate format a la = 54° 54.716'N - 012° 03.114'E
 
-        var anySpace = '(\\s|\&nbsp\;)*';
+        var anySpace = '(\\s|\\&nbsp\\;|<span>\\&nbsp\\;<\\/span>)*';
 
         function niordCoordinatesRegExp(coord){
             var lat = window.latLngFormat.split( coord[1] ),
@@ -447,13 +447,14 @@
         //Craete common regEx for any coordinates
         var latDegree     = '[0-8]\\d',
             lngDegree     = '(0\\d{2}|1[0-8]\\d)',
+            degreeChar    = '(<span>\\&deg\\;<\\/span>|<span>°<\\/span>|\\&deg\\;)',
             minute        = '[0-5]\\d',
             decimalMinute = '\\d{1,3}';
 
             var coorRegEx = new RegExp(
-                    latDegree + anySpace + '\\&deg\\;'  + anySpace + '('+minute + '([\.\,]' + decimalMinute + ')?'+'\')?' + anySpace + '[NS]' +
-                    anySpace + '\-?' + anySpace +
-                    lngDegree + anySpace + '\\&deg\\;'  + anySpace + '('+minute + '([\.\,]' + decimalMinute + ')?'+'\')?' + anySpace + '[EW]',
+                    latDegree + anySpace + degreeChar + anySpace + '('+minute + '([\.\,]' + decimalMinute + ')?'+'\')?' + anySpace + '[NS]' +
+                    anySpace  + '\-?' + anySpace +
+                    lngDegree + anySpace + degreeChar + anySpace + '('+minute + '([\.\,]' + decimalMinute + ')?'+'\')?' + anySpace + '[EW]',
                     'gi'
                 );
 
