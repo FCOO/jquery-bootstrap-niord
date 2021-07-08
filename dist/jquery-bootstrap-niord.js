@@ -903,17 +903,33 @@
             fullAreaTitle.en = fullAreaTitle.en + ' - ' + this.subAreaTitle.en;
         }
 
+        function adjustAreaList( textObj ){
+            var result = $.extend(true, {}, textObj);
+            $.each(result, function(id, text){
+                //Prevent last item from breaking last short word
+                var all = text.split(' - '),
+                    lastSentence = all.pop(),
+                    list = lastSentence.split(' '),
+                    lastWord = list.pop();
+
+                lastSentence = list.join(' ');
+                lastSentence += (lastWord.length <= 2 ? '&nbsp;' : ' ') + lastWord;
+
+                all.push(lastSentence);
+                result[id] = all.join(' - ');
+            });
+            return result;
+        }
 
         return {
             id      : this.id,
             type    : this.mainType,
             shortId : this.shortId || this.domainId.toUpperCase(),
             date    : this.publishDateFrom,
-//HER            area    : this.areaTitle,
             area    : {
-                normal: this.areaTitle,
-                full  : fullAreaTitle,
-                sub   : this.subAreaTitle
+                normal: adjustAreaList(this.areaTitle),
+                full  : adjustAreaList(fullAreaTitle),
+                sub   : adjustAreaList(this.subAreaTitle)
             },
 
             title   : this.shortTitle,
