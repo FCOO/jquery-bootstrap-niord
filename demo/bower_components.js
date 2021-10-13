@@ -18331,6 +18331,29 @@ return jQuery;
     return data;
   }
   var isIE10 = typeof window !== 'undefined' && window.navigator && window.navigator.userAgent && window.navigator.userAgent.indexOf('MSIE') > -1;
+  var chars = [' ', ',', '?', '!', ';'];
+  function looksLikeObjectPath(key, nsSeparator, keySeparator) {
+    nsSeparator = nsSeparator || '';
+    keySeparator = keySeparator || '';
+    var possibleChars = chars.filter(function (c) {
+      return nsSeparator.indexOf(c) < 0 && keySeparator.indexOf(c) < 0;
+    });
+    if (possibleChars.length === 0) return true;
+    var r = new RegExp("(".concat(possibleChars.map(function (c) {
+      return c === '?' ? '\\?' : c;
+    }).join('|'), ")"));
+    var matched = !r.test(key);
+
+    if (!matched) {
+      var ki = key.indexOf(keySeparator);
+
+      if (ki > 0 && !r.test(key.substring(0, ki))) {
+        matched = true;
+      }
+    }
+
+    return matched;
+  }
 
   function deepFind(obj, path) {
     var keySeparator = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '.';
@@ -18340,6 +18363,8 @@ return jQuery;
     var current = obj;
 
     for (var i = 0; i < paths.length; ++i) {
+      if (!current) return undefined;
+
       if (typeof current[paths[i]] === 'string' && i + 1 < paths.length) {
         return undefined;
       }
@@ -18527,6 +18552,15 @@ return jQuery;
         return this.data[lng];
       }
     }, {
+      key: "hasLanguageSomeTranslations",
+      value: function hasLanguageSomeTranslations(lng) {
+        var data = this.getDataByLanguage(lng);
+        var n = data && Object.keys(data) || [];
+        return !!n.find(function (v) {
+          return data[v] && Object.keys(data[v]).length > 0;
+        });
+      }
+    }, {
       key: "toJSON",
       value: function toJSON() {
         return this.data;
@@ -18591,6 +18625,11 @@ return jQuery;
         var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {
           interpolation: {}
         };
+
+        if (key === undefined || key === null) {
+          return false;
+        }
+
         var resolved = this.resolve(key, options);
         return resolved && resolved.res !== undefined;
       }
@@ -18601,8 +18640,10 @@ return jQuery;
         if (nsSeparator === undefined) nsSeparator = ':';
         var keySeparator = options.keySeparator !== undefined ? options.keySeparator : this.options.keySeparator;
         var namespaces = options.ns || this.options.defaultNS;
+        var wouldCheckForNsInKey = nsSeparator && key.indexOf(nsSeparator) > -1;
+        var seemsNaturalLanguage = !this.options.userDefinedKeySeparator && !options.keySeparator && !this.options.userDefinedNsSeparator && !options.nsSeparator && !looksLikeObjectPath(key, nsSeparator, keySeparator);
 
-        if (nsSeparator && key.indexOf(nsSeparator) > -1) {
+        if (wouldCheckForNsInKey && !seemsNaturalLanguage) {
           var m = key.match(this.interpolator.nestingRegexp);
 
           if (m && m.length > 0) {
@@ -18701,7 +18742,7 @@ return jQuery;
           var usedKey = false;
           var needsPluralHandling = options.count !== undefined && typeof options.count !== 'string';
           var hasDefaultValue = Translator.hasDefaultValue(options);
-          var defaultValueSuffix = needsPluralHandling ? this.pluralResolver.getSuffix(lng, options.count) : '';
+          var defaultValueSuffix = needsPluralHandling ? this.pluralResolver.getSuffix(lng, options.count, options) : '';
           var defaultValue = options["defaultValue".concat(defaultValueSuffix)] || options.defaultValue;
 
           if (!this.isValidLookup(res) && hasDefaultValue) {
@@ -18714,6 +18755,8 @@ return jQuery;
             res = key;
           }
 
+          var missingKeyNoValueFallbackToKey = options.missingKeyNoValueFallbackToKey || this.options.missingKeyNoValueFallbackToKey;
+          var resForMissing = missingKeyNoValueFallbackToKey && usedKey ? undefined : res;
           var updateMissing = hasDefaultValue && defaultValue !== res && this.options.updateMissing;
 
           if (usedKey || usedDefault || updateMissing) {
@@ -18741,9 +18784,9 @@ return jQuery;
 
             var send = function send(l, k, fallbackValue) {
               if (_this2.options.missingKeyHandler) {
-                _this2.options.missingKeyHandler(l, namespace, k, updateMissing ? fallbackValue : res, updateMissing, options);
+                _this2.options.missingKeyHandler(l, namespace, k, updateMissing ? fallbackValue : resForMissing, updateMissing, options);
               } else if (_this2.backendConnector && _this2.backendConnector.saveMissing) {
-                _this2.backendConnector.saveMissing(l, namespace, k, updateMissing ? fallbackValue : res, updateMissing, options);
+                _this2.backendConnector.saveMissing(l, namespace, k, updateMissing ? fallbackValue : resForMissing, updateMissing, options);
               }
 
               _this2.emit('missingKey', l, namespace, k, res);
@@ -18764,7 +18807,7 @@ return jQuery;
 
           res = this.extendTranslation(res, keys, options, resolved, lastKey);
           if (usedKey && res === key && this.options.appendNamespaceToMissingKey) res = "".concat(namespace, ":").concat(key);
-          if (usedKey && this.options.parseMissingKeyHandler) res = this.options.parseMissingKeyHandler(res);
+          if ((usedKey || usedDefault) && this.options.parseMissingKeyHandler) res = this.options.parseMissingKeyHandler(res);
         }
 
         return res;
@@ -18871,7 +18914,7 @@ return jQuery;
                 _this4.i18nFormat.addLookupKeys(finalKeys, key, code, ns, options);
               } else {
                 var pluralSuffix;
-                if (needsPluralHandling) pluralSuffix = _this4.pluralResolver.getSuffix(code, options.count);
+                if (needsPluralHandling) pluralSuffix = _this4.pluralResolver.getSuffix(code, options.count, options);
                 if (needsPluralHandling && needsContextHandling) finalKeys.push(finalKey + pluralSuffix);
                 if (needsContextHandling) finalKeys.push(finalKey += "".concat(_this4.options.contextSeparator).concat(options.context));
                 if (needsPluralHandling) finalKeys.push(finalKey += pluralSuffix);
@@ -18935,7 +18978,6 @@ return jQuery;
       _classCallCheck(this, LanguageUtil);
 
       this.options = options;
-      this.whitelist = this.options.supportedLngs || false;
       this.supportedLngs = this.options.supportedLngs || false;
       this.logger = baseLogger.create('languageUtils');
     }
@@ -18984,12 +19026,6 @@ return jQuery;
         }
 
         return this.options.cleanCode || this.options.lowerCaseLng ? code.toLowerCase() : code;
-      }
-    }, {
-      key: "isWhitelisted",
-      value: function isWhitelisted(code) {
-        this.logger.deprecate('languageUtils.isWhitelisted', 'function "isWhitelisted" will be renamed to "isSupportedCode" in the next major - please make sure to rename it\'s usage asap.');
-        return this.isSupportedCode(code);
       }
     }, {
       key: "isSupportedCode",
@@ -19243,6 +19279,15 @@ return jQuery;
       return Number(n == 1 ? 0 : n == 2 ? 1 : (n < 0 || n > 10) && n % 10 == 0 ? 2 : 3);
     }
   };
+  var deprecatedJsonVersions = ['v1', 'v2', 'v3'];
+  var suffixesOrder = {
+    zero: 0,
+    one: 1,
+    two: 2,
+    few: 3,
+    many: 4,
+    other: 5
+  };
 
   function createRules() {
     var rules = {};
@@ -19266,6 +19311,12 @@ return jQuery;
       this.languageUtils = languageUtils;
       this.options = options;
       this.logger = baseLogger.create('pluralResolver');
+
+      if ((!this.options.compatibilityJSON || this.options.compatibilityJSON === 'v4') && (typeof Intl === 'undefined' || !Intl.PluralRules)) {
+        this.options.compatibilityJSON = 'v3';
+        this.logger.error('Your environment seems not to be Intl API compatible, use an Intl.PluralRules polyfill. Will fallback to the compatibilityJSON v3 format handling.');
+      }
+
       this.rules = createRules();
     }
 
@@ -19277,19 +19328,38 @@ return jQuery;
     }, {
       key: "getRule",
       value: function getRule(code) {
+        var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+        if (this.shouldUseIntlApi()) {
+          try {
+            return new Intl.PluralRules(code, {
+              type: options.ordinal ? 'ordinal' : 'cardinal'
+            });
+          } catch (_unused) {
+            return;
+          }
+        }
+
         return this.rules[code] || this.rules[this.languageUtils.getLanguagePartFromCode(code)];
       }
     }, {
       key: "needsPlural",
       value: function needsPlural(code) {
-        var rule = this.getRule(code);
+        var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+        var rule = this.getRule(code, options);
+
+        if (this.shouldUseIntlApi()) {
+          return rule && rule.resolvedOptions().pluralCategories.length > 1;
+        }
+
         return rule && rule.numbers.length > 1;
       }
     }, {
       key: "getPluralFormsOfKey",
       value: function getPluralFormsOfKey(code, key) {
-        return this.getSuffixes(code).map(function (suffix) {
-          return key + suffix;
+        var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+        return this.getSuffixes(code, options).map(function (suffix) {
+          return "".concat(key).concat(suffix);
         });
       }
     }, {
@@ -19297,54 +19367,78 @@ return jQuery;
       value: function getSuffixes(code) {
         var _this = this;
 
-        var rule = this.getRule(code);
+        var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+        var rule = this.getRule(code, options);
 
         if (!rule) {
           return [];
         }
 
+        if (this.shouldUseIntlApi()) {
+          return rule.resolvedOptions().pluralCategories.sort(function (pluralCategory1, pluralCategory2) {
+            return suffixesOrder[pluralCategory1] - suffixesOrder[pluralCategory2];
+          }).map(function (pluralCategory) {
+            return "".concat(_this.options.prepend).concat(pluralCategory);
+          });
+        }
+
         return rule.numbers.map(function (number) {
-          return _this.getSuffix(code, number);
+          return _this.getSuffix(code, number, options);
         });
       }
     }, {
       key: "getSuffix",
       value: function getSuffix(code, count) {
-        var _this2 = this;
-
-        var rule = this.getRule(code);
+        var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+        var rule = this.getRule(code, options);
 
         if (rule) {
-          var idx = rule.noAbs ? rule.plurals(count) : rule.plurals(Math.abs(count));
-          var suffix = rule.numbers[idx];
-
-          if (this.options.simplifyPluralSuffix && rule.numbers.length === 2 && rule.numbers[0] === 1) {
-            if (suffix === 2) {
-              suffix = 'plural';
-            } else if (suffix === 1) {
-              suffix = '';
-            }
+          if (this.shouldUseIntlApi()) {
+            return "".concat(this.options.prepend).concat(rule.select(count));
           }
 
-          var returnSuffix = function returnSuffix() {
-            return _this2.options.prepend && suffix.toString() ? _this2.options.prepend + suffix.toString() : suffix.toString();
-          };
-
-          if (this.options.compatibilityJSON === 'v1') {
-            if (suffix === 1) return '';
-            if (typeof suffix === 'number') return "_plural_".concat(suffix.toString());
-            return returnSuffix();
-          } else if (this.options.compatibilityJSON === 'v2') {
-            return returnSuffix();
-          } else if (this.options.simplifyPluralSuffix && rule.numbers.length === 2 && rule.numbers[0] === 1) {
-            return returnSuffix();
-          }
-
-          return this.options.prepend && idx.toString() ? this.options.prepend + idx.toString() : idx.toString();
+          return this.getSuffixRetroCompatible(rule, count);
         }
 
         this.logger.warn("no plural rule found for: ".concat(code));
         return '';
+      }
+    }, {
+      key: "getSuffixRetroCompatible",
+      value: function getSuffixRetroCompatible(rule, count) {
+        var _this2 = this;
+
+        var idx = rule.noAbs ? rule.plurals(count) : rule.plurals(Math.abs(count));
+        var suffix = rule.numbers[idx];
+
+        if (this.options.simplifyPluralSuffix && rule.numbers.length === 2 && rule.numbers[0] === 1) {
+          if (suffix === 2) {
+            suffix = 'plural';
+          } else if (suffix === 1) {
+            suffix = '';
+          }
+        }
+
+        var returnSuffix = function returnSuffix() {
+          return _this2.options.prepend && suffix.toString() ? _this2.options.prepend + suffix.toString() : suffix.toString();
+        };
+
+        if (this.options.compatibilityJSON === 'v1') {
+          if (suffix === 1) return '';
+          if (typeof suffix === 'number') return "_plural_".concat(suffix.toString());
+          return returnSuffix();
+        } else if (this.options.compatibilityJSON === 'v2') {
+          return returnSuffix();
+        } else if (this.options.simplifyPluralSuffix && rule.numbers.length === 2 && rule.numbers[0] === 1) {
+          return returnSuffix();
+        }
+
+        return this.options.prepend && idx.toString() ? this.options.prepend + idx.toString() : idx.toString();
+      }
+    }, {
+      key: "shouldUseIntlApi",
+      value: function shouldUseIntlApi() {
+        return !deprecatedJsonVersions.includes(this.options.compatibilityJSON);
       }
     }]);
 
@@ -19564,6 +19658,182 @@ return jQuery;
     }]);
 
     return Interpolator;
+  }();
+
+  function _arrayWithHoles(arr) {
+    if (Array.isArray(arr)) return arr;
+  }
+
+  function _iterableToArrayLimit(arr, i) {
+    if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return;
+    var _arr = [];
+    var _n = true;
+    var _d = false;
+    var _e = undefined;
+
+    try {
+      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+        _arr.push(_s.value);
+
+        if (i && _arr.length === i) break;
+      }
+    } catch (err) {
+      _d = true;
+      _e = err;
+    } finally {
+      try {
+        if (!_n && _i["return"] != null) _i["return"]();
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+
+    return _arr;
+  }
+
+  function _arrayLikeToArray(arr, len) {
+    if (len == null || len > arr.length) len = arr.length;
+
+    for (var i = 0, arr2 = new Array(len); i < len; i++) {
+      arr2[i] = arr[i];
+    }
+
+    return arr2;
+  }
+
+  function _unsupportedIterableToArray(o, minLen) {
+    if (!o) return;
+    if (typeof o === "string") return _arrayLikeToArray(o, minLen);
+    var n = Object.prototype.toString.call(o).slice(8, -1);
+    if (n === "Object" && o.constructor) n = o.constructor.name;
+    if (n === "Map" || n === "Set") return Array.from(o);
+    if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
+  }
+
+  function _nonIterableRest() {
+    throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+  }
+
+  function _slicedToArray(arr, i) {
+    return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
+  }
+
+  function parseFormatStr(formatStr) {
+    var formatName = formatStr.toLowerCase();
+    var formatOptions = {};
+
+    if (formatStr.indexOf('(') > -1) {
+      var p = formatStr.split('(');
+      formatName = p[0].toLowerCase();
+      var optStr = p[1].substring(0, p[1].length - 1);
+
+      if (formatName === 'currency' && optStr.indexOf(':') < 0) {
+        if (!formatOptions.currency) formatOptions.currency = optStr.trim();
+      } else if (formatName === 'relativetime' && optStr.indexOf(':') < 0) {
+        if (!formatOptions.range) formatOptions.range = optStr.trim();
+      } else {
+        var opts = optStr.split(';');
+        opts.forEach(function (opt) {
+          if (!opt) return;
+
+          var _opt$split = opt.split(':'),
+              _opt$split2 = _slicedToArray(_opt$split, 2),
+              key = _opt$split2[0],
+              val = _opt$split2[1];
+
+          if (val.trim() === 'false') formatOptions[key.trim()] = false;
+          if (val.trim() === 'true') formatOptions[key.trim()] = true;
+          if (!isNaN(val.trim())) formatOptions[key.trim()] = parseInt(val.trim(), 10);
+          if (!formatOptions[key.trim()]) formatOptions[key.trim()] = val.trim();
+        });
+      }
+    }
+
+    return {
+      formatName: formatName,
+      formatOptions: formatOptions
+    };
+  }
+
+  var Formatter = function () {
+    function Formatter() {
+      var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+      _classCallCheck(this, Formatter);
+
+      this.logger = baseLogger.create('formatter');
+      this.options = options;
+      this.formats = {
+        number: function number(val, lng, options) {
+          return new Intl.NumberFormat(lng, options).format(val);
+        },
+        currency: function currency(val, lng, options) {
+          return new Intl.NumberFormat(lng, _objectSpread({}, options, {
+            style: 'currency'
+          })).format(val);
+        },
+        datetime: function datetime(val, lng, options) {
+          return new Intl.DateTimeFormat(lng, _objectSpread({}, options)).format(val);
+        },
+        relativetime: function relativetime(val, lng, options) {
+          return new Intl.RelativeTimeFormat(lng, _objectSpread({}, options)).format(val, options.range || 'day');
+        },
+        list: function list(val, lng, options) {
+          return new Intl.ListFormat(lng, _objectSpread({}, options)).format(val);
+        }
+      };
+      this.init(options);
+    }
+
+    _createClass(Formatter, [{
+      key: "init",
+      value: function init(services) {
+        var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {
+          interpolation: {}
+        };
+        var iOpts = options.interpolation;
+        this.formatSeparator = iOpts.formatSeparator ? iOpts.formatSeparator : iOpts.formatSeparator || ',';
+      }
+    }, {
+      key: "add",
+      value: function add(name, fc) {
+        this.formats[name] = fc;
+      }
+    }, {
+      key: "format",
+      value: function format(value, _format, lng, options) {
+        var _this = this;
+
+        var formats = _format.split(this.formatSeparator);
+
+        var result = formats.reduce(function (mem, f) {
+          var _parseFormatStr = parseFormatStr(f),
+              formatName = _parseFormatStr.formatName,
+              formatOptions = _parseFormatStr.formatOptions;
+
+          if (_this.formats[formatName]) {
+            var formatted = mem;
+
+            try {
+              var valOptions = options && options.formatParams && options.formatParams[options.interpolationkey] || {};
+              var l = valOptions.locale || valOptions.lng || options.locale || options.lng || lng;
+              formatted = _this.formats[formatName](mem, l, _objectSpread({}, formatOptions, options, valOptions));
+            } catch (error) {
+              _this.logger.warn(error);
+            }
+
+            return formatted;
+          } else {
+            _this.logger.warn("there was no format function for ".concat(formatName));
+          }
+
+          return mem;
+        }, value);
+        return result;
+      }
+    }]);
+
+    return Formatter;
   }();
 
   function remove(arr, what) {
@@ -19795,6 +20065,11 @@ return jQuery;
     return Connector;
   }(EventEmitter);
 
+  function format(value, format, lng, options) {
+    return value;
+  }
+
+  format.isDummy = true;
   function get() {
     return {
       debug: false,
@@ -19803,8 +20078,6 @@ return jQuery;
       defaultNS: ['translation'],
       fallbackLng: ['dev'],
       fallbackNS: false,
-      whitelist: false,
-      nonExplicitWhitelist: false,
       supportedLngs: false,
       nonExplicitSupportedLngs: false,
       load: 'all',
@@ -19848,9 +20121,7 @@ return jQuery;
       },
       interpolation: {
         escapeValue: true,
-        format: function format(value, _format, lng, options) {
-          return value;
-        },
+        format: format,
         prefix: '{{',
         suffix: '}}',
         formatSeparator: ',',
@@ -19859,7 +20130,7 @@ return jQuery;
         nestingSuffix: ')',
         nestingOptionsSeparator: ',',
         maxReplaces: 1000,
-        skipOnVariables: false
+        skipOnVariables: true
       }
     };
   }
@@ -19867,18 +20138,6 @@ return jQuery;
     if (typeof options.ns === 'string') options.ns = [options.ns];
     if (typeof options.fallbackLng === 'string') options.fallbackLng = [options.fallbackLng];
     if (typeof options.fallbackNS === 'string') options.fallbackNS = [options.fallbackNS];
-
-    if (options.whitelist) {
-      if (options.whitelist && options.whitelist.indexOf('cimode') < 0) {
-        options.whitelist = options.whitelist.concat(['cimode']);
-      }
-
-      options.supportedLngs = options.whitelist;
-    }
-
-    if (options.nonExplicitWhitelist) {
-      options.nonExplicitSupportedLngs = options.nonExplicitWhitelist;
-    }
 
     if (options.supportedLngs && options.supportedLngs.indexOf('cimode') < 0) {
       options.supportedLngs = options.supportedLngs.concat(['cimode']);
@@ -19941,17 +20200,23 @@ return jQuery;
           options = {};
         }
 
-        if (options.whitelist && !options.supportedLngs) {
-          this.logger.deprecate('whitelist', 'option "whitelist" will be renamed to "supportedLngs" in the next major - please make sure to rename this option asap.');
-        }
-
-        if (options.nonExplicitWhitelist && !options.nonExplicitSupportedLngs) {
-          this.logger.deprecate('whitelist', 'options "nonExplicitWhitelist" will be renamed to "nonExplicitSupportedLngs" in the next major - please make sure to rename this option asap.');
+        if (!options.defaultNS && options.ns) {
+          if (typeof options.ns === 'string') {
+            options.defaultNS = options.ns;
+          } else if (options.ns.indexOf('translation') < 0) {
+            options.defaultNS = options.ns[0];
+          }
         }
 
         this.options = _objectSpread({}, get(), this.options, transformOptions(options));
-        this.format = this.options.interpolation.format;
-        if (!callback) callback = noop;
+
+        if (options.keySeparator !== undefined) {
+          this.options.userDefinedKeySeparator = options.keySeparator;
+        }
+
+        if (options.nsSeparator !== undefined) {
+          this.options.userDefinedNsSeparator = options.nsSeparator;
+        }
 
         function createClassOnDemand(ClassOrObject) {
           if (!ClassOrObject) return null;
@@ -19966,6 +20231,14 @@ return jQuery;
             baseLogger.init(null, this.options);
           }
 
+          var formatter;
+
+          if (this.modules.formatter) {
+            formatter = this.modules.formatter;
+          } else if (typeof Intl !== 'undefined') {
+            formatter = Formatter;
+          }
+
           var lu = new LanguageUtil(this.options);
           this.store = new ResourceStore(this.options.resources, this.options);
           var s = this.services;
@@ -19977,6 +20250,13 @@ return jQuery;
             compatibilityJSON: this.options.compatibilityJSON,
             simplifyPluralSuffix: this.options.simplifyPluralSuffix
           });
+
+          if (formatter && this.options.interpolation.format && this.options.interpolation.format.isDummy) {
+            s.formatter = createClassOnDemand(formatter);
+            s.formatter.init(s, this.options);
+            this.options.interpolation.format = s.formatter.format.bind(s.formatter);
+          }
+
           s.interpolator = new Interpolator(this.options);
           s.utils = {
             hasLoadedNamespace: this.hasLoadedNamespace.bind(this)
@@ -20013,6 +20293,9 @@ return jQuery;
           });
         }
 
+        this.format = this.options.interpolation.format;
+        if (!callback) callback = noop;
+
         if (this.options.fallbackLng && !this.services.languageDetector && !this.options.lng) {
           var codes = this.services.languageUtils.getFallbackCodes(this.options.fallbackLng);
           if (codes.length > 0 && codes[0] !== 'dev') this.options.lng = codes[0];
@@ -20044,7 +20327,7 @@ return jQuery;
 
         var load = function load() {
           var finish = function finish(err, t) {
-            if (_this2.isInitialized) _this2.logger.warn('init: i18next is already initialized. You should call init just once!');
+            if (_this2.isInitialized && !_this2.initializedStoreOnce) _this2.logger.warn('init: i18next is already initialized. You should call init just once!');
             _this2.isInitialized = true;
             if (!_this2.options.isClone) _this2.logger.log('initialized', _this2.options);
 
@@ -20150,6 +20433,10 @@ return jQuery;
           postProcessor.addPostProcessor(module);
         }
 
+        if (module.type === 'formatter') {
+          this.modules.formatter = module;
+        }
+
         if (module.type === '3rdParty') {
           this.modules.external.push(module);
         }
@@ -20165,10 +20452,26 @@ return jQuery;
         var deferred = defer();
         this.emit('languageChanging', lng);
 
+        var setLngProps = function setLngProps(l) {
+          _this4.language = l;
+          _this4.languages = _this4.services.languageUtils.toResolveHierarchy(l);
+          _this4.resolvedLanguage = undefined;
+          if (['cimode', 'dev'].indexOf(l) > -1) return;
+
+          for (var li = 0; li < _this4.languages.length; li++) {
+            var lngInLngs = _this4.languages[li];
+            if (['cimode', 'dev'].indexOf(lngInLngs) > -1) continue;
+
+            if (_this4.store.hasLanguageSomeTranslations(lngInLngs)) {
+              _this4.resolvedLanguage = lngInLngs;
+              break;
+            }
+          }
+        };
+
         var done = function done(err, l) {
           if (l) {
-            _this4.language = l;
-            _this4.languages = _this4.services.languageUtils.toResolveHierarchy(l);
+            setLngProps(l);
 
             _this4.translator.changeLanguage(l);
 
@@ -20195,8 +20498,7 @@ return jQuery;
 
           if (l) {
             if (!_this4.language) {
-              _this4.language = l;
-              _this4.languages = _this4.services.languageUtils.toResolveHierarchy(l);
+              setLngProps(l);
             }
 
             if (!_this4.translator.language) _this4.translator.changeLanguage(l);
@@ -20220,7 +20522,7 @@ return jQuery;
       }
     }, {
       key: "getFixedT",
-      value: function getFixedT(lng, ns) {
+      value: function getFixedT(lng, ns, keyPrefix) {
         var _this5 = this;
 
         var fixedT = function fixedT(key, opts) {
@@ -20239,7 +20541,9 @@ return jQuery;
           options.lng = options.lng || fixedT.lng;
           options.lngs = options.lngs || fixedT.lngs;
           options.ns = options.ns || fixedT.ns;
-          return _this5.t(key, options);
+          var keySeparator = _this5.options.keySeparator || '.';
+          var resultKey = keyPrefix ? "".concat(keyPrefix).concat(keySeparator).concat(key) : key;
+          return _this5.t(resultKey, options);
         };
 
         if (typeof lng === 'string') {
@@ -20249,6 +20553,7 @@ return jQuery;
         }
 
         fixedT.ns = ns;
+        fixedT.keyPrefix = keyPrefix;
         return fixedT;
       }
     }, {
@@ -20287,7 +20592,7 @@ return jQuery;
           return false;
         }
 
-        var lng = this.languages[0];
+        var lng = this.resolvedLanguage || this.languages[0];
         var fallbackLng = this.options ? this.options.fallbackLng : false;
         var lastLng = this.languages[this.languages.length - 1];
         if (lng.toLowerCase() === 'cimode') return true;
@@ -20355,9 +20660,9 @@ return jQuery;
     }, {
       key: "dir",
       value: function dir(lng) {
-        if (!lng) lng = this.languages && this.languages.length > 0 ? this.languages[0] : this.language;
+        if (!lng) lng = this.resolvedLanguage || (this.languages && this.languages.length > 0 ? this.languages[0] : this.language);
         if (!lng) return 'rtl';
-        var rtlLngs = ['ar', 'shu', 'sqr', 'ssh', 'xaa', 'yhd', 'yud', 'aao', 'abh', 'abv', 'acm', 'acq', 'acw', 'acx', 'acy', 'adf', 'ads', 'aeb', 'aec', 'afb', 'ajp', 'apc', 'apd', 'arb', 'arq', 'ars', 'ary', 'arz', 'auz', 'avl', 'ayh', 'ayl', 'ayn', 'ayp', 'bbz', 'pga', 'he', 'iw', 'ps', 'pbt', 'pbu', 'pst', 'prp', 'prd', 'ug', 'ur', 'ydd', 'yds', 'yih', 'ji', 'yi', 'hbo', 'men', 'xmn', 'fa', 'jpr', 'peo', 'pes', 'prs', 'dv', 'sam'];
+        var rtlLngs = ['ar', 'shu', 'sqr', 'ssh', 'xaa', 'yhd', 'yud', 'aao', 'abh', 'abv', 'acm', 'acq', 'acw', 'acx', 'acy', 'adf', 'ads', 'aeb', 'aec', 'afb', 'ajp', 'apc', 'apd', 'arb', 'arq', 'ars', 'ary', 'arz', 'auz', 'avl', 'ayh', 'ayl', 'ayn', 'ayp', 'bbz', 'pga', 'he', 'iw', 'ps', 'pbt', 'pbu', 'pst', 'prp', 'prd', 'ug', 'ur', 'ydd', 'yds', 'yih', 'ji', 'yi', 'hbo', 'men', 'xmn', 'fa', 'jpr', 'peo', 'pes', 'prs', 'dv', 'sam', 'ckb'];
         return rtlLngs.indexOf(this.services.languageUtils.getLanguagePartFromCode(lng)) >= 0 ? 'rtl' : 'ltr';
       }
     }, {
@@ -20410,7 +20715,8 @@ return jQuery;
           options: this.options,
           store: this.store,
           language: this.language,
-          languages: this.languages
+          languages: this.languages,
+          resolvedLanguage: this.resolvedLanguage
         };
       }
     }]);
@@ -27331,77 +27637,6 @@ module.exports = ret;
 
 })(jQuery);
 
-;
-/****************************************************************************
-	bootstrap-popover-extensions.js,
-
-	(c) 2017, FCOO
-
-	https://github.com/FCOO/bootstrap-popover-extensions
-	https://github.com/FCOO
-
-****************************************************************************/
-
-(function ($/*, window, document, undefined*/) {
-	"use strict";
-
-    //Concert from all new placement to original
-    var truePlacement2placement = {
-            topleft   : 'top',    top   : 'top',    topright   : 'top',
-            bottomleft: 'bottom', bottom: 'bottom', bottomright: 'bottom',
-            lefttop   : 'left',   left  : 'left',   leftbottom : 'left',
-            righttop  : 'right',  right : 'right',  rightbottom: 'right'
-    };
-
-    /****************************************************
-    Overwrite Popover.show to save and modify new positions
-    *****************************************************/
-    $.fn.tooltip.Constructor.prototype.show = function( _show ){
-        return function(){
-            //If first time: Save 'true' placement
-            if (!this.config.truePlacement){
-                this.config.truePlacement = this.config.placement;
-                this.config.placement = truePlacement2placement[this.config.truePlacement];
-            }
-
-            //Original methods
-            _show.apply(this, arguments);
-
-            //Adjust popover
-            var $tip        = $(this.tip),
-                arrowDim    = $tip.find('.arrow').width() || 10,
-                arrowOffset = 6 + arrowDim,
-                offset      = 0,
-                sign        = 0;
-
-
-
-            switch (this.config.truePlacement){
-                case 'topright'   :
-                case 'rightbottom':
-                case 'bottomright':
-                case 'leftbottom' : sign = +1; break;
-
-                case 'topleft'    :
-                case 'righttop'   :
-                case 'bottomleft' :
-                case 'lefttop'    : sign = -1; break;
-
-                default           : sign = 0;
-            }
-
-            switch (sign) {
-                case +1: offset = '+50%p - ' + arrowOffset + 'px'; break;
-                case -1: offset = '-50%p + ' + arrowOffset + 'px'; break;
-                default: offset = 0;
-            }
-
-            this._popper.modifiers[1].offset = offset;
-        };
-
-    }( $.fn.tooltip.Constructor.prototype.show );
-
-}(jQuery, this, document));
 ;
 /*!
  * Bootstrap-select v1.13.18 (https://developer.snapappointments.com/bootstrap-select)
@@ -41059,8 +41294,8 @@ return index;
 }(jQuery, this.i18next, this, document));
 ;
 /*!
- * perfect-scrollbar v1.5.0
- * Copyright 2020 Hyunje Jun, MDBootstrap and Contributors
+ * perfect-scrollbar v1.5.2
+ * Copyright 2021 Hyunje Jun, MDBootstrap and Contributors
  * Licensed under MIT
  */
 
@@ -41389,8 +41624,9 @@ return index;
     var roundedScrollTop = Math.floor(element.scrollTop);
     var rect = element.getBoundingClientRect();
 
-    i.containerWidth = Math.ceil(rect.width);
-    i.containerHeight = Math.ceil(rect.height);
+    i.containerWidth = Math.round(rect.width);
+    i.containerHeight = Math.round(rect.height);
+
     i.contentWidth = element.scrollWidth;
     i.contentHeight = element.scrollHeight;
 
@@ -42144,6 +42380,11 @@ return index;
           }
 
           if (Math.abs(speed.x) < 0.01 && Math.abs(speed.y) < 0.01) {
+            clearInterval(easingLoop);
+            return;
+          }
+
+          if (!i.element) {
             clearInterval(easingLoop);
             return;
           }
@@ -56440,6 +56681,78 @@ module.exports = g;
 
 ;
 /****************************************************************************
+	bootstrap-popover-extensions.js,
+
+	(c) 2017, FCOO
+
+	https://github.com/FCOO/bootstrap-popover-extensions
+	https://github.com/FCOO
+
+****************************************************************************/
+
+(function ($/*, window, document, undefined*/) {
+	"use strict";
+
+    //Concert from all new placement to original
+    var truePlacement2placement = {
+            topleft   : 'top',    top   : 'top',    topright   : 'top',
+            bottomleft: 'bottom', bottom: 'bottom', bottomright: 'bottom',
+            lefttop   : 'left',   left  : 'left',   leftbottom : 'left',
+            righttop  : 'right',  right : 'right',  rightbottom: 'right'
+    };
+
+    /****************************************************
+    Overwrite Popover.show to save and modify new positions
+    *****************************************************/
+    $.fn.tooltip.Constructor.prototype.show = function( _show ){
+        return function(){
+            //If first time: Save 'true' placement
+            if (!this.config.truePlacement){
+                this.config.truePlacement = this.config.placement;
+                this.config.placement = truePlacement2placement[this.config.truePlacement];
+            }
+
+            //Original methods
+            _show.apply(this, arguments);
+
+            //Adjust popover
+            var $tip        = $(this.tip),
+                arrowDim    = $tip.find('.arrow').width() || 10,
+                arrowOffset = 6 + arrowDim,
+                offset      = 0,
+                sign        = 0;
+
+
+
+            switch (this.config.truePlacement){
+                case 'topright'   :
+                case 'rightbottom':
+                case 'bottomright':
+                case 'leftbottom' : sign = +1; break;
+
+                case 'topleft'    :
+                case 'righttop'   :
+                case 'bottomleft' :
+                case 'lefttop'    : sign = -1; break;
+
+                default           : sign = 0;
+            }
+
+            switch (sign) {
+                case +1: offset = '+50%p - ' + arrowOffset + 'px'; break;
+                case -1: offset = '-50%p + ' + arrowOffset + 'px'; break;
+                default: offset = 0;
+            }
+
+            if (this._popper)
+                this._popper.modifiers[1].offset = offset;
+        };
+
+    }( $.fn.tooltip.Constructor.prototype.show );
+
+}(jQuery, this, document));
+;
+/****************************************************************************
 	jquery-bootstrap-accordion.js,
 
 	(c) 2017, FCOO
@@ -56998,14 +57311,20 @@ module.exports = g;
 (function ($/*, window/*, document, undefined*/) {
 	"use strict";
 
+
+
+    var bsCheckBoxId = 0;
+
     /**********************************************************
     bsCheckbox( options ) - create a Bootstrap checkbox
     **********************************************************/
     $.bsCheckbox = function( options ){
+
+        options.id = options.id || 'bsCheckBox_' + bsCheckBoxId++;
         options.type = options.type || 'checkbox';
+        options.className_semi = 'semi-selected';
 
         if (options.semiSelected){
-            options.className_semi = 'semi-selected';
             options.selected = true;
         }
 
@@ -57021,6 +57340,7 @@ module.exports = g;
         //Create input-element
             $input =
                 $('<input/>')
+                    .addClass('cbxInput')
                     .prop({
                         type   : 'checkbox',
                         checked: options.selected
@@ -57028,29 +57348,109 @@ module.exports = g;
                     ._bsAddIdAndName( options )
                     .appendTo( $result );
 
-        //Create input-element as checkbox from jquery-checkbox-radio-group
-        $input.checkbox( options );
+        //Allow multi-lines
+        $result.toggleClass('multi-lines', !!options.multiLines);
+
+
+        /*
+        If options.onClick = function(id, state, checkbox) exists => The control of setting
+        and getting the state of the checkbox/radio is transfered to the onClick-function.
+        This option prevent the default click-event for the input. The state of the input must be set using the cbxSetXXXX-methods of checkbox
+
+        */
+        if (options.onClick){
+            $input.on('click', $.proxy($result._cbx_onClick, $result) ),
+
+            //Add options used by $.fn._cbxSet
+            $input.data('cbx_options', options);
+        }
+        else
+            //Create input-element as checkbox from jquery-checkbox-radio-group
+            $input.checkbox( options );
 
         //Get id and update input.id
-        var id = $input.data('cbx_options').id;
-        $input.prop({id: id });
+        $input.prop({id: options.id });
 
         //Add label
         var $label = $('<label/>')
-                        .prop('for', id )
+                        .prop('for', options.id )
                         .appendTo( $result );
 
         //Add <i> with check-icon if it is a checkbox
         $('<i/>')
-            .addClass('fas')
+            .addClass('checkbox-icon fas')
             .addClass(options.type == 'checkbox' ? 'fa-check' : 'fa-circle')
             .appendTo( $label );
 
-        if (options.text)
-            $('<span/>').i18n( options.text ).appendTo( $label );
+        var content = options.content ? options.content : {icon: options.icon, text: options.text};
+        $('<div/>')._bsAddHtml( content ).appendTo( $label );
 
         return $result;
     };
+
+    //Extend $.fn with methods to set and get the state of bsCheckbox and to handle click
+    $.fn.extend({
+        _cbx_getInput: function(){
+            return this.children('input.cbxInput');
+        },
+
+        cbxOptions: function(){
+            return this._cbx_getInput().data('cbx_options');
+        },
+
+        cbxSetSelected: function(callOnChange){
+            return this.cbxSetState(true, callOnChange);
+        },
+        cbxSetUnselected: function(callOnChange){
+            return this.cbxSetState(false, callOnChange);
+        },
+        cbxSetSemiSelected: function(callOnChange){
+            return this.cbxSetState('semi', callOnChange);
+        },
+
+        cbxToggleState: function(callOnChange){
+            return this.cbxSetState(!this.cbxOptions().selected, callOnChange);
+        },
+
+        cbxSetState: function(state, callOnChange){
+            var checked = !!state;
+
+            this._cbx_getInput()._cbxSet(checked, !callOnChange);
+
+            this._cbx_getInput().prop('checked', checked);
+
+            //Update semi-selected class
+            this._cbx_getInput().toggleClass( this.cbxOptions().className_semi, !!(state && (state !== true)) );
+
+            return this;
+        },
+
+        cbxGetState: function(){
+            var result = this.cbxOptions().selected;
+            if (result && this._cbx_getInput().hasClass(this.cbxOptions().className_semi))
+                result = 'semi';
+            return result;
+        },
+
+        _cbx_onClick: function(event){
+            //Prevent default event and call the users onClick-function instead
+            //The onClick-function must bee called with delay to allow update of the input-element
+
+            var _this       = this,
+                options     = this.cbxOptions(),
+                state       = this.cbxGetState(),
+                onClickFunc = options.onClick;
+
+            setTimeout(function(){
+                onClickFunc(options.id, state, _this);
+            }, 10);
+
+            event.preventDefault();
+        }
+
+    });
+
+
 }(jQuery, this, document));
 
 
@@ -65775,7 +66175,8 @@ Set methodes and options for format utm
 
     //Default options and paths
         defaultOptions = {
-            domains: [
+            autoLoad: false, //If true the getMessage will automatic load data
+            domains : [
                 'niord-nw',   //All Danish navigational warnings are produced in the "niord-nw" domain.
                 'niord-nm',   //All Danish Notices to Mariners are produced in the "niord-nm" domain.
                 'niord-fa',   //All Danish firing areas are defined as miscellaneous Notices to Mariners in the "niord-fa" domain.
@@ -65785,7 +66186,7 @@ Set methodes and options for format utm
         baseUrl         = 'https://niord.dma.dk/rest/public/v1/',
         dateFormatParam = '?dateFormat=UNIX_EPOCH',
         messagesUrl     = baseUrl + 'messages',
-        publicationsUrl = baseUrl + 'publications' + dateFormatParam,
+        //publicationsUrl = baseUrl + 'publications' + dateFormatParam,
         domainParam     = '&domain=',
 
         domainDefaultShortTitle = {
@@ -65807,17 +66208,26 @@ Set methodes and options for format utm
     /********************************************
     domainUrl( domains ) - Return the url to retrive info from one or more domain(s)
     ********************************************/
-    function domainUrl( domains ){
+    ns.domainUrl = function( domains ){
         domains = $.isArray( domains ) ? domains : [domains];
         return messagesUrl + dateFormatParam + domainParam + domains.join(domainParam);
-    }
+    };
 
     /********************************************
-    messageUrl( id ) - Return the url to retrive info from one message
+    messageUrl( id ) - Return the url to retrive info from a single message
     ********************************************/
-    function messageUrl( id ){
+    ns.messageUrl = function( id ){
         return baseUrl + 'message/' + id + dateFormatParam;
-    }
+    };
+
+
+    /********************************************
+    publicationsUrl() - Return the url to retrive publications
+    ********************************************/
+    ns.publicationsUrl = function(){
+        return baseUrl + 'publications' + dateFormatParam;
+    };
+
 
     /********************************************
     arrayToPhrases( content ) - Convert contentArray
@@ -66252,8 +66662,7 @@ Set methodes and options for format utm
     ************************************************************
     ***********************************************************/
     ns.Messages = function( options ){
-        this.options = $.extend( defaultOptions, options || {} );
-        this.url = domainUrl(this.options.domains);
+        this.options = $.extend( true, {}, defaultOptions, options || {} );
         this.init();
     };
 
@@ -66265,6 +66674,8 @@ Set methodes and options for format utm
             this.rejectList  = [];   //List of functions to be called when loading fails
             this.childList   = [];
 
+            this.childResolveList = {}; //{ID: {resolve, reject, promiseOptions}} = Set of message-id and resolve-, reject-functions and promiseOptions to be called when the data is loaded
+
             this.messages = {};
             this.messagesByShortId = {};
             this.areas = {};
@@ -66272,6 +66683,11 @@ Set methodes and options for format utm
             this.categories = {};
             this.charts = {};
             this.publications = {};
+        },
+
+        getUrl: function( domain ){
+            var result = ns.domainUrl(domain || this.options.domains);
+            return result;
         },
 
 		/*************************************************
@@ -66282,6 +66698,9 @@ Set methodes and options for format utm
         },
 
         _getChildren: function( domain, resolve, reject, promiseOptions ){
+            reject         = reject         || ns.defaultErrorHandler;
+            promiseOptions = promiseOptions || ns.defaultPromiseOptions;
+
             var resolveObj = resolve ? {domain: domain, resolve: resolve} : null;
             if (resolveObj)
                 this.resolveList.push( resolveObj );
@@ -66290,10 +66709,19 @@ Set methodes and options for format utm
                 this.rejectList.push( rejectObj );
 
             switch (this.status){
-                case 'NOTHING': this.load(promiseOptions);  break;
-                case 'LOADING': /* Nothing - just wait */   break;
-                case 'LOADED' : resolveObj ? this._resolveObj( resolveObj ) : null; break;
-                case 'ERROR'  : rejectObj  ? resolveObj.reject( resolveObj.domain ) : null; break;
+                case 'NOTHING':
+                    if (this.options.autoLoad)
+                        this.load(promiseOptions);
+                    break;
+                case 'LOADING':
+                    /* Nothing - just wait */
+                    break;
+                case 'LOADED' :
+                    resolveObj ? this._resolveObj( resolveObj ) : null;
+                    break;
+                case 'ERROR'  :
+                    rejectObj  ? resolveObj.reject( resolveObj.domain ) : null;
+                    break;
             }
         },
 
@@ -66301,9 +66729,12 @@ Set methodes and options for format utm
         load
         *************************************************/
         load: function(promiseOptions){
+            if (this.status != NOTHING)
+                return this;
+
             this.status = LOADING;
             Promise.getJSON(
-                this.url,
+                this.getUrl(),
                 promiseOptions || {},
                 $.proxy( this._resolve, this),
                 $.proxy( this.reject, this)
@@ -66318,9 +66749,21 @@ Set methodes and options for format utm
             this.childList = [];
             this.resolve( data );
             this.status = LOADED;
+
+            this.ready = true;
+
+            //The resolve for domains
             $.each( this.resolveList, function( index, obj ){
                 _this._resolveObj( obj );
             });
+
+            //The resolve for single messages
+            $.each( this.childResolveList, function( id, opt ){
+                _this.getMessage(id, opt.resolve, opt.reject, opt.promiseOptions);
+            });
+
+            return this;
+
         },
 
         /*************************************************
@@ -66368,7 +66811,7 @@ Set methodes and options for format utm
             if (id == 'ALL')
                 messageList = this.domainList[id];
             else
-                //Find messagwes from one or more domain-id(s)
+                //Find messages from one or more domain-id(s)
                 $.each( $.isArray(id) ? id : id.split(' '), function( index, id ){
                     if (_this.domainList[id])
                         $.each( _this.domainList[id], function( index, mess ){
@@ -66382,10 +66825,21 @@ Set methodes and options for format utm
         reject - call reject-functions when loading fails
         *************************************************/
         reject: function(){
+            var _this = this;
+
             this.status = ERROR;
+            this.ready = true;
+
+            //The reject for domains
             $.each( this.rejectList, function( index, rejectObj ){
                 rejectObj.reject( rejectObj.domain );
             });
+
+            //The reject for single messages = try to load the individually
+            $.each( this.childResolveList, function( id, opt ){
+                _this.getMessage(id, opt.resolve, opt.reject, opt.promiseOptions);
+            });
+            return this;
         },
 
         /*************************************************
@@ -66415,26 +66869,48 @@ Set methodes and options for format utm
         },
 
         /*************************************************
-        getMessage - Return the message. If the messages is not in the list and a resolve functions is given: Try loading the message
+        getMessage - Return the message.
+        If the messages is not in the list and a resolve functions is given:
+            Try loading the message, or
+            Wait for the full list to be loaded
+
+
         *************************************************/
         getMessage: function( id, resolve, reject, promiseOptions ){
-            var result = this.messagesByShortId[id] || this.messages[id];
+            var _this = this,
+                result = this.messagesByShortId[id] || this.messages[id];
+
+            reject         = reject         || ns.defaultErrorHandler;
+            promiseOptions = promiseOptions || ns.defaultPromiseOptions;
 
             if (resolve){
                 if (result)
                     resolve( result );
-                else {
-                    var _this = this;
-                    Promise.getJSON(
-                        messageUrl( id ),
-                        promiseOptions || {},
-                        function( data ){
-                            _this._addMessage( data );
-                            resolve( _this.getMessage(id) );
-                        },
-                        reject
-                    );
-                }
+                else
+                    if (this.ready){
+                        //The data are loaded and do not contain the message => Try to load the message via single-message request
+                        Promise.getJSON(
+                            ns.messageUrl( id ),
+                            promiseOptions || {},
+                            function( data ){
+                                _this._addMessage( data );
+                                return _this.getMessage(id, resolve);
+                            },
+                            reject
+                        );
+                    }
+                    else {
+                        //Wait for this to load
+                        this.childResolveList[id] = {
+                            resolve: resolve,
+                            reject : reject,
+                            promiseOptions: promiseOptions
+                        };
+
+                        //If it is not loading => load it
+                        if (this.options.autoLoad && (this.status == NOTHING))
+                            this.load(promiseOptions);
+                    }
             }
             return result;
         },
@@ -66552,13 +67028,18 @@ Set methodes and options for format utm
     Publications
     ************************************************************
     ***********************************************************/
-    ns.Publications = function(){
-        this.url = publicationsUrl;
+    ns.Publications = function(options){
+        this.options = $.extend( true, {}, defaultOptions, options || {} );
+
         this.init();
     };
 
     //Extend the prototype
 	ns.Publications .prototype = $.extend({}, ns.Messages.prototype, {
+
+        getUrl: function(){
+            return ns.publicationsUrl();
+        },
 
         getPublications: function(resolve, reject, promiseOptions){
             this._getChildren( '', resolve, reject, promiseOptions );
@@ -66586,34 +67067,13 @@ Set methodes and options for format utm
     });
 
 
-    //Create public object and methods
-    ns.messages     = new ns.Messages();
-    ns.publications = new ns.Publications();
-
-    ns.getMessage = function( id, resolve, reject, promiseOptions ){
-        return ns.messages.getMessage(
-            id,
-            resolve,
-            reject || ns.defaultErrorHandler,
-            promiseOptions || ns.defaultPromiseOptions
-        );
-    };
-    ns.getMessages = function( domain, resolve, reject, promiseOptions ){
-        return ns.messages.getMessages(
-            domain,
-            resolve,
-            reject || ns.defaultErrorHandler,
-            promiseOptions || ns.defaultPromiseOptions
-        );
-    };
-    ns.getPublications = function( resolve, reject, promiseOptions ){
-        return ns.publications.getPublications(
-            resolve,
-            reject || ns.defaultErrorHandler,
-            promiseOptions || ns.defaultPromiseOptions
-        );
+    ns.messages = function(options){
+        return new ns.Messages(options);
     };
 
+    ns.publications  = function(options){
+        return new ns.Publications(options);
+    };
 
 
 

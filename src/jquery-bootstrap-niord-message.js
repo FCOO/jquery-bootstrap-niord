@@ -83,7 +83,7 @@
 
 
         //function to be called when a coordinate in the modal is clicked
-        onClickCoordinate: null //function(coordinate, text, message)
+        onClickCoordinate: null //function(coordinate, text, messageId)
 
     }, ns.options || {} );
 
@@ -94,8 +94,7 @@
             list = coordIdStr.split(' '),
             coord = [parseFloat(list[0]), parseFloat(list[1])],
             messId = list.length >= 3 ? list[2] : null;
-
-        ns.options.onClickCoordinate(coord, $elem.text(), messId ? ns.getMessage(messId) : null);
+        ns.options.onClickCoordinate(coord, $elem.text(), messId);
     };
 
 

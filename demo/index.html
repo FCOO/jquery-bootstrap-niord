@@ -81,7 +81,7 @@
             //function to create a map inside $element and displaying the geoJSONs in geoJSONList
         };
 
-        window.Niord.options.onClickCoordinate  = function(coord, text, message){
+        window.Niord.options.onClickCoordinate  = function(coord, text, messageId){
             latLngFormat.setFormat(window.latLngFormat.LATLNGFORMAT_DMM);
             $.bsNoty({text:text+ '<br>'+ latLngFormat(coord[1], coord[0]).format()});
 
@@ -102,86 +102,16 @@
 
         var $body = $('body'); var found = false; test = true;
 
+
+        var messages = window.Niord.messages();
+        messages.load();
+
         //***************************************************
         function display( list ){
-/*
-            window.Niord.messages._addMessage({
-                "id":"555306e4-0b0d-4d62-9a55-36ec64539aa4",
-                "created":1538733329000,
-                "updated":1539338367000,
-                "messageSeries":{"seriesId":"dma-nm"},
-                "number":792,
-                "shortId":"NM-792-18",
-                "mainType":"NM",
-                "type":"MISCELLANEOUS_NOTICE",
-                "status":"EXPIRED",
-                "areas":[{"id":605,"mrn":"urn:mrn:iho:country:gl","active":true,"descs":[{"lang":"da","name":"Grønland"},{"lang":"en","name":"Greenland"}]},{"id":614,"mrn":"urn:mrn:iho:country:no","active":true,"descs":[{"lang":"da","name":"Norge"},{"lang":"en","name":"Norway"}]}],
-                "publishDateFrom":1538736128000,
-                "publishDateTo":1539338367000,
-                "originalInformation":true,
-                "parts":[
-                    {   "indexNo":0,
-                        "type":"DETAILS",
-                        "eventDates":[{"allDay":false,"fromDate":1538736128000,"toDate":1539338367000}],
-                        "geometry":{"type":"FeatureCollection","id":"ee096eeb-2475-493b-9f44-9f5d62eedae4","features":[{"type":"Feature","id":"0f620288-eb45-4f6d-9f9d-c95292fc60bd","geometry":{"type":"Point","coordinates":[-0.3458415916590265,72.4768547550305]},"properties":{"startCoordIndex":1}}]},
-                        "descs":[{"lang":"da","subject":"Ændret område for Inmarsat-C dækning","details":"<p>Den geografiske d&aelig;kning af&nbsp;Inmarsat-C i gr&oslash;nlandshavet, mellem gr&oslash;nland og norge, &aelig;ndres. Det p&aring;virkede omr&aring;de er vist som gr&oslash;nt skraveret omr&aring;de i nedenst&aring;ende kortskitse. Fart&oslash;jer i omr&aring;det kan blive forhindret i at afsende og modtage&nbsp;meddelelser via Inmarsat-C systemet.</p>\n<p>&AElig;ndringen tr&aelig;der i kraft den 30. oktober 2018, kl. 1100 UTC. Den reducerede d&aelig;kning forventes at vare i 6 uger.</p>\n<p></p>\n<p></p>"},{"lang":"en","subject":"Changed area for Inmarsat-C coverage","details":"<p>The geographical coverage of Inmarsat-C in the Greenland Sea between Greenland and Norway will be changed. The affected area are show in cross-hatched green in the map below.</p>\n<p>Vessels within the area can be&nbsp;prevented from broadcasting and recieving of messages from the Inmarsat-C system.</p>\n<p>The change will enter into force 30 October 2018, hour 1100 UTC. The reduced coverage are expected to last for 6 weeks.</p>"}],
-                        "hideSubject":true
-                    }
-                ],
-                "descs":[{"lang":"da","title":"Grønland. Norge. Grønlandshavet. Ændret område for Inmarsat-C dækning.","vicinity":"Grønlandshavet","source":"Inmarsat 28. september 2018"},{"lang":"en","title":"Greenland. Norway. Greenland Sea. Changed area for Inmarsat-C coverage.","vicinity":"Greenland Sea","source":"Inmarsat 28 September 2018"}],
-                "attachments":[
-                    {
-                        "type":"image/jpeg",
-                        "path":"https://niord.dma.dk/rest/repo/file/messages/5/55/555306e4-0b0d-4d62-9a55-36ec64539aa4/2/Inmarsat-C.jpg",
-                        "fileName":"Inmarsat-C.jpg",
-                        "fileSize":31536,
-                        "display":"BELOW",
-                        "descs":[
-                            {"lang":"da","caption":"Område påvirket af ændret Inmarsat-C dækning"},
-                            {"lang":"en","caption":"Area affected of changed Unmarsat-C coverage"}
-                        ]
-                    }
-                ]
-            },
-            true);
-
-            list.push(window.Niord.messages.messages["555306e4-0b0d-4d62-9a55-36ec64539aa4"]);
-*/
-            //console.log(list);
-
+            console.log('list', list);
             $.each( list, function( index, message ){
- //message.bsAccordionOptions();
-
-//message.asModal();
-
-//HER                if (message.attachments)
-//HER                    console.log(message.shortId, message.attachments);
-
-                //if ( !found && !$.isEmptyObject(message.references) ) {
-                //if ( !found && !$.isEmptyObject(message.categories) && (message.domainId == 'NW')) {
-                //if ( !found && (message.shortId == 'FA/EK-D-396 2018') ) { //Skyde område
-                //if ( !found && (message.shortId == 'NM-028-18') ) {
-                //if ( !found && (message.shortId == 'NM-774-18') ) { //GRØNLAND
-                //if ( !found && (message.shortId == 'NM-509-18') ) { //Med publication
-                //if ( !found && (message.id == '81c8a82c-8fe6-4bc2-984d-8c8d2c683080') ) { //Skydeadvarsel
-                //if ( !found && (message.shortId == 'NM-739-18') ) { //Flere publicationer
-                //if ( !found && (message.shortId == 'NM-782-18') ) { //Publicationer uden anchor
-                //if ( !found && (message.shortId == 'NM-792-18') ) { //Vedhæftelser
-                //if ( !found && (message.shortId == 'NM-063-17') ) { //Flere main area
-                //if ( !found && (message.shortId == 'NM-770-18') ) { //Flere main area
-                //if ( !found && (message.shortId == 'NM-620-18') ) { //Flere details
-                //if ( !found && (message.shortId == 'NM-853-18') ) { //Flere details
-                //if ( !found && (message.areaLevelList[0].length > 1) ) { //Flere main area
-                //if ( !found && message.publication && message.publication.da ) { //Flere publicationer
-                //if ( !found && message.publication && (message.publication.da != message.publication.en) ) { //Forskellige antal publicationerfor dansk og engelsk
-
-                //All message
-//                console.log(message.shortTitle);//, message.title);
-
+                //message.asModal();
             });
-
-
-//        Niord.messages.asModal();
 
         } //End of display
         //***************************************************
@@ -189,37 +119,19 @@
         var $body = $('body'),
             selectedArea = null,
             selectedCat = null;
-/*
-        $.bsButton({
-            text: {da: 'Vælg område', en:'Select area'},
-            onClick: function(){
-                Niord.messages.selectArea(
-                    function(id){ selectedArea = id; console.log('selected area = ',id); },
-                    selectedArea
-                );
-            }
-        }).appendTo($body);
-        $.bsButton({
-            text: {da: 'Vælg kategori', en:'Select category'},
-            onClick: function(){
-                Niord.messages.selectCategory(
-                    function(id){ selectedCat = id; console.log('selected category = ',id); },
-                    selectedCat
-                );
-            }
-        }).appendTo($body);
-*/
+
         $.bsButton({
             text: {da: 'Vis én', en:'Show one'},
             onClick: function(){
-                console.log(Niord.getMessage('82f6c3b8-f4ff-4e98-b1ef-28999828ee17') );
-                Niord.messages.messageAsModal('82f6c3b8-f4ff-4e98-b1ef-28999828ee17');
+                messages.messageAsModal('NM-199-19');
             }
         }).appendTo($body);
 
         $.bsButton({
             text: {da: 'Vis alle', en:'Show all'},
-            onClick: function(){ Niord.messages.asModal(); }
+            onClick: function(){ 
+                messages.asModal(); 
+            }
         }).appendTo($body);
 
 
@@ -228,9 +140,7 @@
         //***************************************************
 
 
-        window.Niord.getMessages('', display);
-        window.Niord.getPublications(function(data){ console.log('Publications=', data); });
-
+        messages.getMessages('', display);
 
 	</script>
 </body>
