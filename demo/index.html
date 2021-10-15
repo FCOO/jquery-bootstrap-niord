@@ -30,6 +30,12 @@
 
 <body>
     <div id="tooltip_me" class="square"/>
+
+    <script>
+        window.fcoo = window.fcoo || {};
+        window.fcoo.DEMO_VERSION = true;
+    </script>
+
     <script src="bower_components.js"></script>
 	<!-- <script src="../src/jquery-bootstrap-niord-message_history.js"></script> -->
 	<script src="../src/jquery-bootstrap-niord-message.js"></script>
@@ -103,8 +109,9 @@
         var $body = $('body'); var found = false; test = true;
 
 
-        var messages = window.Niord.messages();
-        messages.load();
+        window.Niord.load();
+        var messages = window.Niord.messages;
+
 
         //***************************************************
         function display( list ){
