@@ -861,7 +861,7 @@
     ns.Message.prototype.popoverContent = function(){
         var result = [];
         if (this.shortId)
-            result.push({text: this.shortId, textClass: 'text-monospace _d-block'});
+            result.push({text: this.shortId, textClass: 'font-monospace _d-block'});
         if (this.subAreaTitle)
             result.push({text: this.subAreaTitle, textClass: 'text-center d-block'});
         if (this.shortTitle)

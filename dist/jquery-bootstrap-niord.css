@@ -34,11 +34,11 @@
 
 .table.time-period thead tr th:first-child {
   padding-left: 7px;
-  box-shadow: inset 4px 0px 0px 0px #dee2e6; }
+  box-shadow: inset 4px 0px 0px 0px var(--bs-border-color); }
 
 .table.time-period thead tr th:last-child {
   padding-right: 7px;
-  box-shadow: inset -4px 0px 0px 0px #dee2e6; }
+  box-shadow: inset -4px 0px 0px 0px var(--bs-border-color); }
 
 .table.time-period tbody tr.start-before-now.end-after-now td {
   background-color: lightgreen; }
