@@ -27,7 +27,7 @@
             resultList.push({
                 id       : obj.id,
                 text     : [str, obj.name],
-                textClass: level ? '' : ['','font-weight-bold'],
+                textClass: level ? '' : ['','fw-bold'],
                 _textStyle: ['', 'warning']
             });
             resultList = treeList2SelectList( obj.children, level+1, resultList );
@@ -212,7 +212,7 @@
             .append('<br>')
             ._bsAddHtml(tableRows.area.full)
             .append('<br>')
-            ._bsAddHtml({text: tableRows.title, textClass:'font-weight-bold'});
+            ._bsAddHtml({text: tableRows.title, textClass:'fw-bold'});
     },
 
     /******************************************************
