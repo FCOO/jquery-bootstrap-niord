@@ -220,7 +220,7 @@
     ns.Message.prototype.bsFixedContent = function(size){
         size = size ? size.toUpperCase() : 'SMALL';
         var fixedContentTextClass     = 'd-block text-center',
-            fixedContentBoldTextClass = fixedContentTextClass + ' font-weight-bold',
+            fixedContentBoldTextClass = fixedContentTextClass + ' fw-bold',
             tempResult = [],
             result = [];
 
@@ -280,7 +280,6 @@
 
         return result;
     }
-
 
     /*******************************************************************
     parentList = create a list of text/links with triangle between
@@ -678,7 +677,7 @@
                             if (!!messagePart.subject && (trim(messagePart.subject.da) != trim(_this.shortTitle.da)) )
                                 bsPart.content.push({
                                     text         : messagePart.subject,
-                                    textClassName: 'd-block font-weight-bold'
+                                    textClassName: 'd-block fw-bold'
                                 });
 
                             if (messagePart.details)
@@ -917,6 +916,11 @@
                 all.push(lastSentence);
                 result[id] = all.join(' - ');
             });
+
+            //Prevent empty record
+            result.da = result.da || '';
+            result.en = result.en || result.da || '';
+
             return result;
         }
 

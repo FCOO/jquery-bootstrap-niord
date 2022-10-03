@@ -1,42 +1,42 @@
 {
-  "name": "jquery-bootstrap-niord",
-  "version": "3.0.2",
-  "homepage": "https://github.com/FCOO/jquery-bootstrap-niord",
-  "authors": [
-    "Niels Holt"
-  ],
-  "description": "",
-  "main": [
-    "dist/jquery-bootstrap-niord.js",
-    "dist/jquery-bootstrap-niord.css"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/FCOO/jquery-bootstrap-niord.git"
-  },
-  "dependencies": {
-    "jquery": "latest",
-    "niord": "fcoo/niord.js#^3.1.0",
-    "jquery-bootstrap": "fcoo/jquery-bootstrap#^3.0.0",
-    "i18next-phrases": "fcoo/i18next-phrases#^2.0.1",
-    "jquery-value-format": "fcoo/jquery-value-format#^1.6.0",
-    "pdfobject": "fcoo/PDFObject",
-    "latlng-format": "fcoo/latlng-format#^3.4.4"
-  },
-  "devDependencies": {
-    "bourbon": "latest",
-    "modernizr-mixin": "latest",
-    "mathsass": "latest"
-  },
-  "license": "MIT",
-  "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "test",
-    "tests"
-  ],
-  "moduleType": [
-    "es6"
-  ]
+    "name": "jquery-bootstrap-niord",
+    "version": "3.0.3",
+    "homepage": "https://github.com/FCOO/jquery-bootstrap-niord",
+    "authors": [
+        "Niels Holt"
+    ],
+    "description": "",
+    "main": [
+        "dist/jquery-bootstrap-niord.js",
+        "dist/jquery-bootstrap-niord.css"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/FCOO/jquery-bootstrap-niord.git"
+    },
+    "dependencies": {
+        "jquery": "latest",
+        "niord": "fcoo/niord.js#^3.1.0",
+        "jquery-bootstrap": "fcoo/jquery-bootstrap#^3.0.0",
+        "i18next-phrases": "fcoo/i18next-phrases#^2.0.1",
+        "jquery-value-format": "fcoo/jquery-value-format#^1.6.0",
+        "pdfobject": "fcoo/PDFObject",
+        "latlng-format": "fcoo/latlng-format#^3.4.4"
+    },
+    "devDependencies": {
+        "bourbon": "latest",
+        "modernizr-mixin": "latest",
+        "mathsass": "latest"
+    },
+    "license": "MIT",
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "test",
+        "tests"
+    ],
+    "moduleType": [
+        "es6"
+    ]
 }
