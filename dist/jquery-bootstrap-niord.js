@@ -281,7 +281,6 @@
         return result;
     }
 
-
     /*******************************************************************
     parentList = create a list of text/links with triangle between
     *******************************************************************/
@@ -917,6 +916,11 @@
                 all.push(lastSentence);
                 result[id] = all.join(' - ');
             });
+
+            //Prevent empty record
+            result.da = result.da || '';
+            result.en = result.en || result.da || '';
+
             return result;
         }
 
@@ -1397,7 +1401,7 @@
                     closeWithoutWarning: true,
                     buttons:[{
                         icon   : ns.options.resetFilterIcon,
-                        text   : {da:'Reset', en:'Reset'},
+                        text   : {da:'Nulstil', en:'Reset'},
                         onClick: $.proxy( function(){
                                      this.filterBsModalForm.setValues({
                                          domainId: 'ALL',
@@ -1408,6 +1412,7 @@
                                  }, this )
                     }],
                     onSubmit: $.proxy(this.filter, this),
+                    scroll  : false,
                     content : []
                 },
             defaultSelectItem = function(){
@@ -1416,10 +1421,11 @@
 
             //Selectbox with domainId
             var domainOptions = {
-                id          : 'domainId',
-                type        : 'select',
-                label       : {da:'Type', en:'Type'},
-                items       : [defaultSelectItem()]
+                id       : 'domainId',
+                type     : 'selectbutton',
+                label    : {da:'Type', en:'Type'},
+                fullWidth: true,
+                items    : [defaultSelectItem()]
             };
 
             $.each(['nw', 'fe', 'nm', 'fa'], function(index, id){
@@ -1434,11 +1440,11 @@
 
             //Selectbox with area, chart, category
             modalEditOptions.content.push({
-                id   : 'area',
-                type : 'select',
-                label: 'niord:AREA',
-                size : 6,
-                items: treeList2SelectList(this.areaTreeList, 0, null, defaultSelectItem()),
+                id       : 'area',
+                type     : 'selectbutton',
+                label    : 'niord:AREA',
+                fullWidth: true,
+                items    : treeList2SelectList(this.areaTreeList, 0, null, defaultSelectItem()),
             });
 
             //Selectbox with chart
@@ -1453,20 +1459,20 @@
             });
 
             modalEditOptions.content.push({
-                id   : 'chart',
-                type : 'select',
-                label: 'niord:CHART',
-                size : 6,
-                items: chartItems,
+                id       : 'chart',
+                type     : 'selectbutton',
+                label    : 'niord:CHART',
+                fullWidth: true,
+                items    : chartItems,
             });
 
             //Selectbox with category
             modalEditOptions.content.push({
-                id   : 'category',
-                type : 'select',
-                label: 'niord:CATEGORY',
-                size : 6,
-                items: treeList2SelectList(this.categoryTreeList, 0, null, defaultSelectItem()),
+                id       : 'category',
+                type     : 'selectbutton',
+                label    : 'niord:CATEGORY',
+                fullWidth: true,
+                items    : treeList2SelectList(this.categoryTreeList, 0, null, defaultSelectItem()),
             });
 
 
