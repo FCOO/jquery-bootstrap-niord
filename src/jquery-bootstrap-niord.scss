@@ -23,10 +23,12 @@
 
 
 
-$time-color-past  : #7ABAE1;
-$time-color-now   : lightgreen;
-$time-color-future: #4D72B8;
+$time-past-color    : var(--jbn-time-past-color  , #7ABAE1    );
 
+$time-now-color     : var(--jbn-time-now-color   , darkgreen  );
+$time-now-bg-color  : var(--jbn-time-now-bg-color, lightgreen );
+
+$time-future-color  : var(--jbn-time-future-color, #4D72B8    );
 
 
 //Add Bootstrap-style to modal with direct niord-content
@@ -96,12 +98,12 @@ $time-color-width: 4px;
     tbody tr {
         //Highlight time-period covering now
         &.start-before-now.end-after-now td {
-            background-color: $time-color-now;
+            background-color: $time-now-bg-color;
         }
 
         //"now"-colored line between last past and first future
         &.first-after-now {
-            border-top: $time-color-width solid $time-color-now;
+            border-top: $time-color-width solid $time-now-color;
         }
 
         //Add padding for non-empty td
@@ -109,11 +111,11 @@ $time-color-width: 4px;
         td:last-child:not(:empty) { padding-right: $time-color-width + 3px; }
 
         //Set box-shadow in left or right side of td
-        &.start-before-now td:first-child { @include time-color-box-shadow( $time-color-past       ) }
-        &.start-after-now  td:first-child { @include time-color-box-shadow( $time-color-future     ) }
+        &.start-before-now td:first-child { @include time-color-box-shadow( $time-past-color       ) }
+        &.start-after-now  td:first-child { @include time-color-box-shadow( $time-future-color     ) }
 
-        &.end-before-now   td:last-child  { @include time-color-box-shadow( $time-color-past  , -1 ) }
-        &.end-after-now    td:last-child  { @include time-color-box-shadow( $time-color-future, -1 ) }
+        &.end-before-now   td:last-child  { @include time-color-box-shadow( $time-past-color  , -1 ) }
+        &.end-after-now    td:last-child  { @include time-color-box-shadow( $time-future-color, -1 ) }
     }
 }
 

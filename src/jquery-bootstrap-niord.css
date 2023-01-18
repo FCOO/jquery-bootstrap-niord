@@ -41,10 +41,10 @@
   box-shadow: inset -4px 0px 0px 0px var(--bs-border-color); }
 
 .table.time-period tbody tr.start-before-now.end-after-now td {
-  background-color: lightgreen; }
+  background-color: var(--jbn-time-now-bg-color, lightgreen); }
 
 .table.time-period tbody tr.first-after-now {
-  border-top: 4px solid lightgreen; }
+  border-top: 4px solid var(--jbn-time-now-color, darkgreen); }
 
 .table.time-period tbody tr td:first-child:not(:empty) {
   padding-left: 7px; }
@@ -53,16 +53,16 @@
   padding-right: 7px; }
 
 .table.time-period tbody tr.start-before-now td:first-child {
-  box-shadow: inset 4px 0px 0px 0px #7ABAE1; }
+  box-shadow: inset 4px 0px 0px 0px var(--jbn-time-past-color, #7ABAE1); }
 
 .table.time-period tbody tr.start-after-now td:first-child {
-  box-shadow: inset 4px 0px 0px 0px #4D72B8; }
+  box-shadow: inset 4px 0px 0px 0px var(--jbn-time-future-color, #4D72B8); }
 
 .table.time-period tbody tr.end-before-now td:last-child {
-  box-shadow: inset -4px 0px 0px 0px #7ABAE1; }
+  box-shadow: inset -4px 0px 0px 0px var(--jbn-time-past-color, #7ABAE1); }
 
 .table.time-period tbody tr.end-after-now td:last-child {
-  box-shadow: inset -4px 0px 0px 0px #4D72B8; }
+  box-shadow: inset -4px 0px 0px 0px var(--jbn-time-future-color, #4D72B8); }
 
 table.hide-first-column tr td:first-child {
   display: none; }
