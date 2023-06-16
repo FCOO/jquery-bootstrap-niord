@@ -31,54 +31,44 @@
     };
 
     ns.Publications.prototype.asModal = function(){
-
-        if (!this.bsModal){
-            var options = {
-                    header   : {
-                        icon: ns.options.partIcon.PUBLICATIONS,
-                        text: 'niord:publications'
-                    },
-                    flexWidth: true,
-                    show     : false,
-                    content: {
-                        type     : 'accordion',
-                        multiOpen: true,
-                        allOpen  : true,
-                        list     : []
-                    }
+        var options = {
+                header   : {
+                    icon: ns.options.partIcon.PUBLICATIONS,
+                    text: 'niord:publications'
                 },
-                list = '',
-                lastCategory = '';
+                flexWidth: true,
+                content: {
+                    type     : 'accordion',
+                    multiOpen: true,
+                    allOpen  : true,
+                    list     : []
+                },
+                remove: true,
+                show: true
+            },
+            list = '',
+            lastCategory = '';
 
-            $.each( this.childList, function( index, publication ){
-                var category = publication.category.id;
-                if (category != lastCategory){
-                    //Add new group of publications
-                    var accordionOptions = {
-                        header : publication.category.name,
-                        content: {
-                            type     : 'list',
-                            noBorder : false,
-                            noPadding: false,
-
-
-                            content: []
-                        }
-                    };
-                    list = accordionOptions.content.content;
-                    options.content.list.push(accordionOptions);
-
-                    lastCategory = category;
-                }
-
-                list.push(publication._listItem());
-
-            });
-
-            this.bsModal = $.bsModal( options );
-        }
-
-        this.bsModal.show();
+        $.each( this.childList, function( index, publication ){
+            var category = publication.category.id;
+            if (category != lastCategory){
+                //Add new group of publications
+                var accordionOptions = {
+                    header : publication.category.name,
+                    content: {
+                        type     : 'list',
+                        noBorder : false,
+                        noPadding: false,
+                        content: []
+                    }
+                };
+                list = accordionOptions.content.content;
+                options.content.list.push(accordionOptions);
+                lastCategory = category;
+            }
+            list.push(publication._listItem());
+        });
+        $.bsModal( options );
     };
 
 
