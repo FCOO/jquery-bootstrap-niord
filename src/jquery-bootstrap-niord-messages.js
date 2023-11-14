@@ -142,7 +142,7 @@
                     ],
             };
 
-            //Create table and dd data
+            //Create table and add data
             this.bsTable = $.bsTable(this.bsTableOptions);
             $.each(this.messages, function(id, message){
                 _this.bsTable.addRow( message.asTableRow() );
