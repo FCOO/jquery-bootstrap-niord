@@ -8,6 +8,9 @@
 
 
 ************************************************/
+//COLOR-HELPER
+@import "../bower_components/sass-color-helpers/stylesheets/color-helpers";
+
 //BOURBON - http://bourbon.io/
 @import "../bower_components/bourbon/core/bourbon";
 
@@ -26,10 +29,9 @@
 $time-past-color    : var(--jbn-time-past-color  , #7ABAE1    );
 
 $time-now-color     : var(--jbn-time-now-color   , darkgreen  );
-$time-now-bg-color  : var(--jbn-time-now-bg-color, lightgreen );
+$time-now-text-color: var(--jbn-time-now-bg-color, white      );
 
 $time-future-color  : var(--jbn-time-future-color, #4D72B8    );
-
 
 //Add Bootstrap-style to modal with direct niord-content
 .niord-modal-content {
@@ -98,7 +100,8 @@ $time-color-width: 4px;
     tbody tr {
         //Highlight time-period covering now
         &.start-before-now.end-after-now td {
-            background-color: $time-now-bg-color;
+            background-color: $time-now-color;
+            color           : $time-now-text-color;
         }
 
         //"now"-colored line between last past and first future

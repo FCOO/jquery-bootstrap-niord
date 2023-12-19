@@ -18169,7 +18169,7 @@ return jQuery;
           return new Intl.PluralRules(getCleanedCode(code), {
             type: options.ordinal ? 'ordinal' : 'cardinal'
           });
-        } catch {
+        } catch (err) {
           return;
         }
       }
@@ -28076,12 +28076,12 @@ module.exports = Yaml;
   }
 
   /*!
-   * GSAP 3.12.2
-   * https://greensock.com
+   * GSAP 3.12.4
+   * https://gsap.com
    *
    * @license Copyright 2008-2023, GreenSock. All rights reserved.
-   * Subject to the terms at https://greensock.com/standard-license or for
-   * Club GreenSock members, the agreement issued with that membership.
+   * Subject to the terms at https://gsap.com/standard-license or for
+   * Club GSAP members, the agreement issued with that membership.
    * @author: Jack Doyle, jack@greensock.com
   */
   var _config = {
@@ -28758,7 +28758,7 @@ module.exports = Yaml;
 
           while (max < (max = a[wrapAt++].getBoundingClientRect().left) && wrapAt < l) {}
 
-          wrapAt--;
+          wrapAt < l && wrapAt--;
         }
 
         distances = cache[l] = [];
@@ -29684,11 +29684,11 @@ module.exports = Yaml;
     };
 
     _proto.totalProgress = function totalProgress(value, suppressEvents) {
-      return arguments.length ? this.totalTime(this.totalDuration() * value, suppressEvents) : this.totalDuration() ? Math.min(1, this._tTime / this._tDur) : this.ratio;
+      return arguments.length ? this.totalTime(this.totalDuration() * value, suppressEvents) : this.totalDuration() ? Math.min(1, this._tTime / this._tDur) : this.rawTime() > 0 ? 1 : 0;
     };
 
     _proto.progress = function progress(value, suppressEvents) {
-      return arguments.length ? this.totalTime(this.duration() * (this._yoyo && !(this.iteration() & 1) ? 1 - value : value) + _elapsedCycleDuration(this), suppressEvents) : this.duration() ? Math.min(1, this._time / this._dur) : this.ratio;
+      return arguments.length ? this.totalTime(this.duration() * (this._yoyo && !(this.iteration() & 1) ? 1 - value : value) + _elapsedCycleDuration(this), suppressEvents) : this.duration() ? Math.min(1, this._time / this._dur) : this.rawTime() > 0 ? 1 : 0;
     };
 
     _proto.iteration = function iteration(value, suppressEvents) {
@@ -29697,7 +29697,7 @@ module.exports = Yaml;
       return arguments.length ? this.totalTime(this._time + (value - 1) * cycleDuration, suppressEvents) : this._repeat ? _animationCycle(this._tTime, cycleDuration) + 1 : 1;
     };
 
-    _proto.timeScale = function timeScale(value) {
+    _proto.timeScale = function timeScale(value, suppressEvents) {
       if (!arguments.length) {
         return this._rts === -_tinyNum ? 0 : this._rts;
       }
@@ -29709,7 +29709,7 @@ module.exports = Yaml;
       var tTime = this.parent && this._ts ? _parentToChildTotalTime(this.parent._time, this) : this._tTime;
       this._rts = +value || 0;
       this._ts = this._ps || value === -_tinyNum ? 0 : this._rts;
-      this.totalTime(_clamp(-Math.abs(this._delay), this._tDur, tTime), true);
+      this.totalTime(_clamp(-Math.abs(this._delay), this._tDur, tTime), suppressEvents !== false);
 
       _setEnd(this);
 
@@ -29781,11 +29781,11 @@ module.exports = Yaml;
           time = arguments.length ? rawTime : animation.rawTime();
 
       while (animation) {
-        time = animation._start + time / (animation._ts || 1);
+        time = animation._start + time / (Math.abs(animation._ts) || 1);
         animation = animation._dp;
       }
 
-      return !this.parent && this._sat ? this._sat.vars.immediateRender ? -Infinity : this._sat.globalTime(rawTime) : time;
+      return !this.parent && this._sat ? this._sat.globalTime(rawTime) : time;
     };
 
     _proto.repeat = function repeat(value) {
@@ -30735,8 +30735,6 @@ module.exports = Yaml;
         immediateRender = vars.immediateRender,
         lazy = vars.lazy,
         onUpdate = vars.onUpdate,
-        onUpdateParams = vars.onUpdateParams,
-        callbackScope = vars.callbackScope,
         runBackwards = vars.runBackwards,
         yoyoEase = vars.yoyoEase,
         keyframes = vars.keyframes,
@@ -30793,9 +30791,9 @@ module.exports = Yaml;
           lazy: !prevStartAt && _isNotFalse(lazy),
           startAt: null,
           delay: 0,
-          onUpdate: onUpdate,
-          onUpdateParams: onUpdateParams,
-          callbackScope: callbackScope,
+          onUpdate: onUpdate && function () {
+            return _callback(tween, "onUpdate");
+          },
           stagger: 0
         }, startAt)));
 
@@ -30889,7 +30887,7 @@ module.exports = Yaml;
     tween._initted = (!tween._op || tween._pt) && !overwritten;
     keyframes && time <= 0 && tl.render(_bigNum, true, true);
   },
-      _updatePropTweens = function _updatePropTweens(tween, property, value, start, startIsRelative, ratio, time) {
+      _updatePropTweens = function _updatePropTweens(tween, property, value, start, startIsRelative, ratio, time, skipRecursion) {
     var ptCache = (tween._pt && tween._ptCache || (tween._ptCache = {}))[property],
         pt,
         rootPT,
@@ -30919,7 +30917,7 @@ module.exports = Yaml;
           _initTween(tween, time);
 
           _forceAllPropTweens = 0;
-          return 1;
+          return skipRecursion ? _warn(property + " not eligible for reset") : 1;
         }
 
         ptCache.push(pt);
@@ -31032,7 +31030,7 @@ module.exports = Yaml;
           curTarget,
           staggerFunc,
           staggerVarsToMerge;
-      _this3._targets = parsedTargets.length ? _harness(parsedTargets) : _warn("GSAP target " + targets + " not found. https://greensock.com", !_config.nullTargetWarn) || [];
+      _this3._targets = parsedTargets.length ? _harness(parsedTargets) : _warn("GSAP target " + targets + " not found. https://gsap.com", !_config.nullTargetWarn) || [];
       _this3._ptLookup = [];
       _this3._overwrite = overwrite;
 
@@ -31194,7 +31192,7 @@ module.exports = Yaml;
           } else {
             iteration = ~~(tTime / cycleDuration);
 
-            if (iteration && iteration === tTime / cycleDuration) {
+            if (iteration && iteration === _roundPrecise(tTime / cycleDuration)) {
               time = dur;
               iteration--;
             }
@@ -31211,7 +31209,7 @@ module.exports = Yaml;
 
           prevIteration = _animationCycle(this._tTime, cycleDuration);
 
-          if (time === prevTime && !force && this._initted) {
+          if (time === prevTime && !force && this._initted && iteration === prevIteration) {
             this._tTime = tTime;
             return this;
           }
@@ -31219,7 +31217,7 @@ module.exports = Yaml;
           if (iteration !== prevIteration) {
             timeline && this._yEase && _propagateYoyoEase(timeline, isYoyo);
 
-            if (this.vars.repeatRefresh && !isYoyo && !this._lock) {
+            if (this.vars.repeatRefresh && !isYoyo && !this._lock && this._time !== dur && this._initted) {
               this._lock = force = 1;
               this.render(_roundPrecise(cycleDuration * iteration), true).invalidate()._lock = 0;
             }
@@ -31232,7 +31230,7 @@ module.exports = Yaml;
             return this;
           }
 
-          if (prevTime !== this._time) {
+          if (prevTime !== this._time && !(force && this.vars.repeatRefresh && iteration !== prevIteration)) {
             return this;
           }
 
@@ -31307,7 +31305,7 @@ module.exports = Yaml;
       return _Animation2.prototype.invalidate.call(this, soft);
     };
 
-    _proto3.resetTo = function resetTo(property, value, start, startIsRelative) {
+    _proto3.resetTo = function resetTo(property, value, start, startIsRelative, skipRecursion) {
       _tickerActive || _ticker.wake();
       this._ts || this.play();
       var time = Math.min(this._dur, (this._dp._time - this._start) * this._ts),
@@ -31315,8 +31313,8 @@ module.exports = Yaml;
       this._initted || _initTween(this, time);
       ratio = this._ease(time / this._dur);
 
-      if (_updatePropTweens(this, property, value, start, startIsRelative, ratio, time)) {
-        return this.resetTo(property, value, start, startIsRelative);
+      if (_updatePropTweens(this, property, value, start, startIsRelative, ratio, time, skipRecursion)) {
+        return this.resetTo(property, value, start, startIsRelative, 1);
       }
 
       _alignPlayhead(this, 0);
@@ -31671,7 +31669,9 @@ module.exports = Yaml;
       _dispatch("matchMediaRevert");
 
       matches.forEach(function (c) {
-        return c.onMatch(c);
+        return c.onMatch(c, function (func) {
+          return c.add(null, func);
+        });
       });
       _lastMediaTime = time;
 
@@ -31715,7 +31715,9 @@ module.exports = Yaml;
       };
 
       self.last = f;
-      return name === _isFunction ? f(self) : name ? self[name] = f : f;
+      return name === _isFunction ? f(self, function (func) {
+        return self.add(null, func);
+      }) : name ? self[name] = f : f;
     };
 
     _proto5.ignore = function ignore(func) {
@@ -31741,34 +31743,53 @@ module.exports = Yaml;
       var _this4 = this;
 
       if (revert) {
-        var tweens = this.getTweens();
-        this.data.forEach(function (t) {
-          if (t.data === "isFlip") {
-            t.revert();
-            t.getChildren(true, true, false).forEach(function (tween) {
-              return tweens.splice(tweens.indexOf(tween), 1);
-            });
+        (function () {
+          var tweens = _this4.getTweens(),
+              i = _this4.data.length,
+              t;
+
+          while (i--) {
+            t = _this4.data[i];
+
+            if (t.data === "isFlip") {
+              t.revert();
+              t.getChildren(true, true, false).forEach(function (tween) {
+                return tweens.splice(tweens.indexOf(tween), 1);
+              });
+            }
           }
-        });
-        tweens.map(function (t) {
-          return {
-            g: t.globalTime(0),
-            t: t
-          };
-        }).sort(function (a, b) {
-          return b.g - a.g || -Infinity;
-        }).forEach(function (o) {
-          return o.t.revert(revert);
-        });
-        this.data.forEach(function (e) {
-          return !(e instanceof Tween) && e.revert && e.revert(revert);
-        });
 
-        this._r.forEach(function (f) {
-          return f(revert, _this4);
-        });
+          tweens.map(function (t) {
+            return {
+              g: t._dur || t._delay || t._sat && !t._sat.vars.immediateRender ? t.globalTime(0) : -Infinity,
+              t: t
+            };
+          }).sort(function (a, b) {
+            return b.g - a.g || -Infinity;
+          }).forEach(function (o) {
+            return o.t.revert(revert);
+          });
+          i = _this4.data.length;
 
-        this.isReverted = true;
+          while (i--) {
+            t = _this4.data[i];
+
+            if (t instanceof Timeline) {
+              if (t.data !== "nested") {
+                t.scrollTrigger && t.scrollTrigger.revert();
+                t.kill();
+              }
+            } else {
+              !(t instanceof Tween) && t.revert && t.revert(revert);
+            }
+          }
+
+          _this4._r.forEach(function (f) {
+            return f(revert, _this4);
+          });
+
+          _this4.isReverted = true;
+        })();
       } else {
         this.data.forEach(function (e) {
           return e.kill && e.kill();
@@ -31829,7 +31850,9 @@ module.exports = Yaml;
         }
       }
 
-      active && func(context);
+      active && func(context, function (f) {
+        return context.add(null, f);
+      });
       return this;
     };
 
@@ -32176,7 +32199,7 @@ module.exports = Yaml;
       }
     }
   }, _buildModifierPlugin("roundProps", _roundModifier), _buildModifierPlugin("modifiers"), _buildModifierPlugin("snap", snap)) || _gsap;
-  Tween.version = Timeline.version = gsap.version = "3.12.2";
+  Tween.version = Timeline.version = gsap.version = "3.12.4";
   _coreReady = 1;
   _windowExists() && _wake();
   var Power0 = _easeMap.Power0,
@@ -32269,7 +32292,8 @@ module.exports = Yaml;
     var _this = this;
 
     var target = this.target,
-        style = target.style;
+        style = target.style,
+        cache = target._gsap;
 
     if (property in _transformProps && style) {
       this.tfm = this.tfm || {};
@@ -32278,7 +32302,8 @@ module.exports = Yaml;
         property = _propertyAliases[property] || property;
         ~property.indexOf(",") ? property.split(",").forEach(function (a) {
           return _this.tfm[a] = _get(target, a);
-        }) : this.tfm[property] = target._gsap.x ? target._gsap[property] : _get(target, property);
+        }) : this.tfm[property] = cache.x ? cache[property] : _get(target, property);
+        property === _transformOriginProp && (this.tfm.zOrigin = cache.zOrigin);
       } else {
         return _propertyAliases.transform.split(",").forEach(function (p) {
           return _saveStyle.call(_this, p, isNotCSS);
@@ -32289,7 +32314,7 @@ module.exports = Yaml;
         return;
       }
 
-      if (target._gsap.svg) {
+      if (cache.svg) {
         this.svgo = target.getAttribute("data-svg-origin");
         this.props.push(_transformOriginProp, isNotCSS, "");
       }
@@ -32333,6 +32358,12 @@ module.exports = Yaml;
       if ((!i || !i.isStart) && !style[_transformProp]) {
         _removeIndependentTransforms(style);
 
+        if (cache.zOrigin && style[_transformOriginProp]) {
+          style[_transformOriginProp] += " " + cache.zOrigin + "px";
+          cache.zOrigin = 0;
+          cache.renderTransform();
+        }
+
         cache.uncache = 1;
       }
     }
@@ -32353,7 +32384,7 @@ module.exports = Yaml;
       _supports3D,
       _createElement = function _createElement(type, ns) {
     var e = _doc$1.createElementNS ? _doc$1.createElementNS((ns || "http://www.w3.org/1999/xhtml").replace(/^https/, "http"), type) : _doc$1.createElement(type);
-    return e.style ? e : _doc$1.createElement(type);
+    return e && e.style ? e : _doc$1.createElement(type);
   },
       _getComputedProperty = function _getComputedProperty(target, property, skipPrefixFallback) {
     var cs = getComputedStyle(target);
@@ -32458,18 +32489,21 @@ module.exports = Yaml;
   },
       _removeProperty = function _removeProperty(target, property) {
     if (property) {
-      var style = target.style;
+      var style = target.style,
+          first2Chars;
 
       if (property in _transformProps && property !== _transformOriginProp) {
         property = _transformProp;
       }
 
       if (style.removeProperty) {
-        if (property.substr(0, 2) === "ms" || property.substr(0, 6) === "webkit") {
+        first2Chars = property.substr(0, 2);
+
+        if (first2Chars === "ms" || property.substr(0, 6) === "webkit") {
           property = "-" + property;
         }
 
-        style.removeProperty(property.replace(_capsExp, "-$1").toLowerCase());
+        style.removeProperty(first2Chars === "--" ? property : property.replace(_capsExp, "-$1").toLowerCase());
       } else {
         style.removeAttribute(property);
       }
@@ -32537,12 +32571,19 @@ module.exports = Yaml;
     if (cache && toPercent && cache.width && horizontal && cache.time === _ticker.time && !cache.uncache) {
       return _round(curValue / cache.width * amount);
     } else {
-      (toPercent || curUnit === "%") && !_nonStandardLayouts[_getComputedProperty(parent, "display")] && (style.position = _getComputedProperty(target, "position"));
-      parent === target && (style.position = "static");
-      parent.appendChild(_tempDiv);
-      px = _tempDiv[measureProperty];
-      parent.removeChild(_tempDiv);
-      style.position = "absolute";
+      if (toPercent && (property === "height" || property === "width")) {
+        var v = target.style[property];
+        target.style[property] = amount + unit;
+        px = target[measureProperty];
+        v ? target.style[property] = v : _removeProperty(target, property);
+      } else {
+        (toPercent || curUnit === "%") && !_nonStandardLayouts[_getComputedProperty(parent, "display")] && (style.position = _getComputedProperty(target, "position"));
+        parent === target && (style.position = "static");
+        parent.appendChild(_tempDiv);
+        px = _tempDiv[measureProperty];
+        parent.removeChild(_tempDiv);
+        style.position = "absolute";
+      }
 
       if (horizontal && toPercent) {
         cache = _getCache(parent);
@@ -32612,9 +32653,10 @@ module.exports = Yaml;
     end += "";
 
     if (end === "auto") {
+      startValue = target.style[prop];
       target.style[prop] = end;
       end = _getComputedProperty(target, prop) || end;
-      target.style[prop] = start;
+      startValue ? target.style[prop] = startValue : _removeProperty(target, prop);
     }
 
     a = [start, end];
@@ -33055,7 +33097,7 @@ module.exports = Yaml;
     cache.skewY = skewY + deg;
     cache.transformPerspective = perspective + px;
 
-    if (cache.zOrigin = parseFloat(origin.split(" ")[2]) || 0) {
+    if (cache.zOrigin = parseFloat(origin.split(" ")[2]) || !uncache && cache.zOrigin || 0) {
       style[_transformOriginProp] = _firstTwoOnly(origin);
     }
 
@@ -33431,7 +33473,7 @@ module.exports = Yaml;
           if (startAt && p in startAt) {
             startValue = typeof startAt[p] === "function" ? startAt[p].call(tween, index, target, targets) : startAt[p];
             _isString(startValue) && ~startValue.indexOf("random(") && (startValue = _replaceRandom(startValue));
-            getUnit(startValue + "") || (startValue += _config.units[p] || getUnit(_get(target, p)) || "");
+            getUnit(startValue + "") || startValue === "auto" || (startValue += _config.units[p] || getUnit(_get(target, p)) || "");
             (startValue + "").charAt(1) === "=" && (startValue = _get(target, p));
           } else {
             startValue = _get(target, p);
@@ -42204,7 +42246,7 @@ if (typeof define === 'function' && define.amd) {
         appendTick: function( leftPercent, options ){
             if (!this.$currentGrid || this.options.noTicks) return;
 
-            options = $.extend( {minor: false, color: ''}, options );
+            options = $.extend( {minor: false/*, color: ''*/}, options );
 
             var left = this.cache.canvasMargin + (this.dimentions.containerWidth * leftPercent / 100),
                 ctx  = this.cache.ctx,
@@ -54282,7 +54324,7 @@ options:
         };
 
     window.TimeSlider = function (input, options, pluginCount) {
-        this.VERSION = "7.7.2";
+        this.VERSION = "7.7.3";
 
         //Setting default options
         this.options = $.extend( true, {}, defaultOptions, options );
@@ -54544,13 +54586,9 @@ options:
         appendStandardGrid
         ***************************************************************/
         appendStandardGrid: function(){
-            var _this = this,
-                opt = this.options,
-
-                //text and tick options for secondary grids (relative and utc for absolute scale
-                textOptions = {italic:true, minor:true},
-                tickOptions = {color:'#555555'};
-
+            var _this       = this,
+                opt         = this.options,
+                textOptions = {italic:true, minor:true};  //Text and tick options for secondary grids (relative and utc for absolute scale)
 
             //*****************************************************
             function appendSpecialGrid( gridOpt ){
@@ -54579,7 +54617,7 @@ options:
                 if (gridOpt.newLabels)
                     opt.maxLabelWidth = null;   //Force recalculating label-space
 
-                _this._appendStandardGrid(textOptions, tickOptions);
+                _this._appendStandardGrid(textOptions);
 
                 _this.$currentGrid.addClass(gridClassName);
 
@@ -54651,7 +54689,7 @@ options:
                         newLabels           : false
                     });
 
-                    this.appendDateGrid( textOptions, tickOptions );
+                    this.appendDateGrid( textOptions);
                     this.$currentGrid.addClass(opt.format.UTCGridClassName || opt.UTCGridClassName || '');
 
                     opt.format.timezone = saveTimezone;

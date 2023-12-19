@@ -142,6 +142,7 @@
         $.bsButton({
             text: {da: 'Vis alle', en:'Show all'},
             onClick: function(){ 
+                console.log(messages);
                 messages.asModal(); 
             }
         }).appendTo($body);

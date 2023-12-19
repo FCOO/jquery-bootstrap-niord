@@ -46,7 +46,8 @@
   box-shadow: inset -4px 0px 0px 0px var(--bs-border-color);
 }
 .table.time-period tbody tr.start-before-now.end-after-now td {
-  background-color: var(--jbn-time-now-bg-color, lightgreen);
+  background-color: var(--jbn-time-now-color, darkgreen);
+  color: var(--jbn-time-now-bg-color, white);
 }
 .table.time-period tbody tr.first-after-now {
   border-top: 4px solid var(--jbn-time-now-color, darkgreen);
