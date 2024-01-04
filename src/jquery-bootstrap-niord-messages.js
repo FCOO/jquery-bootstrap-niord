@@ -99,7 +99,7 @@
 
         if (!this.bsModal){
             //Check screen size and select between small and normal size table
-            var displayInSmallTable = !ns.options.isSet('normalModalExtendable');
+            var displayInSmallTable = ns.options.isSet('smallTableWithAllMessages');
 
             this.bsTableOptions = {
                 verticalBorder   : true,
@@ -154,8 +154,9 @@
                     {icon: ns.options.resetFilterIcon, text:{da:'Nulstil', en:'Reset'}, onClick: $.proxy(this.resetFilter, this)},
                     {icon: ns.options.filterIcon,      text:{da:'Filter', en:'Filter'}, onClick: $.proxy(this.filterAsModalForm, this)}
                 ],
-                flexWidth  : !displayInSmallTable,
-                extraWidth : !displayInSmallTable,
+                flexWidth  : true,
+                megaWidth  : true,
+
                 static     : true,
                 show       : false,
                 footer     : {text: '&nbsp;'}

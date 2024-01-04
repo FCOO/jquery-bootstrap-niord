@@ -54,7 +54,7 @@
 
         //modalFooter = Footer in modal
         modalFooter     : null,
-        modalSmallFooter: null,
+        //Removed modalSmallFooter: null,
 
         //vfFormatId = id for the format to use for date, time and position (latLng) when using the jquery-value-format
         vfFormatId: {
@@ -66,8 +66,9 @@
         },
 
 
-        openNewModal         : true,  //Boolean or function. If true a "new"-icon in small-modal will open a new modal. Typical used if small modals are use as popups and the screen is widther
-        normalModalExtendable: false, //Boolean or function. If true the mormal modal can extend to a version with map and inlined attachments. Typical on desktops
+        openNewModal            : true,  //Boolean or function. If true a "new"-icon in small-modal will open a new modal. Typical used if small modals are use as popups and the screen is widther
+        normalModalExtendable   : false, //Boolean or function. If true the mormal modal can extend to a version with map and inlined attachments. Typical on desktops
+        modalIsExtended         : false, //Boolean or function. If true (and normalModalExtendable = true) the modal 'start' as extended (modal-option.isExtended: true)
 
 
         createMap: null, //function($element, message, options): function to create a map inside $element and displaying the message.geoJSON
@@ -80,6 +81,10 @@
         //Icons for filter and reset-buttons
         filterIcon     : 'fa-filter',
         resetFilterIcon: null,
+
+
+        //Type of table with list of all messages
+        smallTableWithAllMessages: false,    //Boolean or function. If true the table with all messages is single column
 
 
         //function to be called when a coordinate in the modal is clicked
@@ -996,7 +1001,9 @@
     /******************************************************
     Message.bsModalSmallOptions
     Return options to create a small version for $.bsModal
+    NOT USED
     ******************************************************/
+/*
     ns.Message.prototype.bsModalSmallOptions = function(modalOptions){
         var result = {
                 header      : this.bsHeaderOptions(),
@@ -1024,7 +1031,7 @@
 
         return $.extend(true, result, modalOptions || {} );
     };
-
+*/
     /******************************************************
     Message.bsModalOptions
     Return standard options to create a $.bsModal
@@ -1038,6 +1045,7 @@
                 footer      : ns.options.modalFooter,
 
                 flexWidth   : true,
+                extraWidth  : true,
 
                 static               : false,
                 modalContentClassName: 'niord-modal-content',
@@ -1046,7 +1054,7 @@
             };
 
         //Extend the modal if ns.options.normalModalExtendable is set
-        if (ns.options.isSet('normalModalExtendable'))
+        if (ns.options.isSet('normalModalExtendable')){
             result.extended = {
                 header      : this.bsHeaderOptions('LARGE'),
                 fixedContent: this.bsFixedContent('LARGE'),
@@ -1054,21 +1062,23 @@
                 footer      : true,
 
                 flexWidth   : true,
-                extraWidth  : true,
+                megaWidth   : true
             };
-
+            result.isExtended = ns.options.isSet('modalIsExtended');
+        }
         return $.extend(true, result, modalOptions || {} );
     },
 
 
     /******************************************************
     Message.asModalSmall
-    TODO - Not used at the moment => remove it ?
+    NOT USED
     ******************************************************/
+/*
     ns.Message.prototype.asModalSmall = function(modalOptions){
         return this._asModal( this.bsModalSmallOptions(modalOptions), true );
     };
-
+*/
     /******************************************************
     Message.asModal
     ******************************************************/

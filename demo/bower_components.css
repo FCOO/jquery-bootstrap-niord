@@ -14462,10 +14462,13 @@ div.modal-dialog.modal-flex-width.modal-mega-width {
 div.modal-dialog.modal-max-width:not(.modal-full-screen) {
   width: calc(100% - 20px);
 }
+div.modal-dialog.modal-full-width:not(.modal-full-screen) {
+  width: 100%;
+}
 div.modal-dialog.modal-full-screen {
   width: 100%;
 }
-div.modal-dialog.modal-full-screen .modal-content {
+div.modal-dialog.modal-full-screen:not(.modal-full-screen-with-border) .modal-content {
   border: none;
   border-radius: 0px;
 }

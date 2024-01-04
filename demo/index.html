@@ -81,10 +81,17 @@
             }
         });
 
+
+        window.Niord.options.modalFooter = {icon: 'fa-home', text:{da:'Footer'}}
+
+
         window.Niord.options.vfFormatId.date_weekday = 'TEST_DATE_WEEKDAY';
         window.Niord.options.vfFormatId.date = 'TEST_DATE';
 
-        window.Niord.options.normalModalExtendable = !window.bsIsTouch;
+        window.Niord.options.normalModalExtendable  = true;
+        window.Niord.options.modalIsExtended        = !window.bsIsTouch;
+
+        window.Niord.options.smallTableWithAllMessages                   = window.bsIsTouch;
 
         window.Niord.options.createMap = function($element, message){
             $element.text('Antal geoJSON = ' + message.geoJSON.features.length);
