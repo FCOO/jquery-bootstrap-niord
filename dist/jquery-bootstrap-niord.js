@@ -54,7 +54,7 @@
 
         //modalFooter = Footer in modal
         modalFooter     : null,
-        //Removed modalSmallFooter: null,
+        modalSmallFooter: null,
 
         //vfFormatId = id for the format to use for date, time and position (latLng) when using the jquery-value-format
         vfFormatId: {
@@ -1001,9 +1001,7 @@
     /******************************************************
     Message.bsModalSmallOptions
     Return options to create a small version for $.bsModal
-    NOT USED
     ******************************************************/
-/*
     ns.Message.prototype.bsModalSmallOptions = function(modalOptions){
         var result = {
                 header      : this.bsHeaderOptions(),
@@ -1031,7 +1029,7 @@
 
         return $.extend(true, result, modalOptions || {} );
     };
-*/
+
     /******************************************************
     Message.bsModalOptions
     Return standard options to create a $.bsModal
