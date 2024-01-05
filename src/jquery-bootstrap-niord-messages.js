@@ -202,7 +202,18 @@
     };
 
     /******************************************************
-    Messages_createTableCellContent
+    Messages._showAllButtonOptions
+    ******************************************************/
+    ns.Messages.prototype._showAllButtonOptions = function(){
+        return {
+            icon   : 'fa-th-list',
+            text   : {da:'Vis alle', en:'Show all'},
+            onClick: this.asModal.bind( this )
+        };
+    };
+
+    /******************************************************
+    Messages._createTableCellContent
     ******************************************************/
     ns.Messages.prototype._createTableCellContent = function(id, $element){
         var tableRows = this.getMessage(id).asTableRow();

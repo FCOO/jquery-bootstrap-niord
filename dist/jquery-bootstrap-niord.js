@@ -1108,11 +1108,7 @@
 
         //First modal => add list-button
         if (!_messages.bsModalMessage)
-            options.buttons = [{
-                icon   : 'fa-th-list',
-                text   : {da:'Vis alle', en:'Show all'},
-                onClick: $.proxy( _messages.asModal, _messages )
-            }];
+            options.buttons = [ _messages._showAllButtonOptions() ];
 
         _messages.bsModalMessage =
             _messages.bsModalMessage ?
@@ -1341,7 +1337,18 @@
     };
 
     /******************************************************
-    Messages_createTableCellContent
+    Messages._showAllButtonOptions
+    ******************************************************/
+    ns.Messages.prototype._showAllButtonOptions = function(){
+        return {
+            icon   : 'fa-th-list',
+            text   : {da:'Vis alle', en:'Show all'},
+            onClick: this.asModal.bind( this )
+        };
+    };
+
+    /******************************************************
+    Messages._createTableCellContent
     ******************************************************/
     ns.Messages.prototype._createTableCellContent = function(id, $element){
         var tableRows = this.getMessage(id).asTableRow();

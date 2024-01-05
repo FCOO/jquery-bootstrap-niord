@@ -1108,11 +1108,7 @@
 
         //First modal => add list-button
         if (!_messages.bsModalMessage)
-            options.buttons = [{
-                icon   : 'fa-th-list',
-                text   : {da:'Vis alle', en:'Show all'},
-                onClick: $.proxy( _messages.asModal, _messages )
-            }];
+            options.buttons = [ _messages._showAllButtonOptions() ];
 
         _messages.bsModalMessage =
             _messages.bsModalMessage ?
