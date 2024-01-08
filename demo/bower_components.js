@@ -59406,7 +59406,6 @@ module.exports = g;
             $._bsAdjustOptions( options, {}, {
                 baseClass   : 'accordion',
                 styleClass  : '',
-                class       : '',
                 content     : ''
             });
 
@@ -62605,16 +62604,19 @@ jquery-bootstrap-modal-promise.js
     In some cases an application need to adjust the default modal-options
     given by an external packages. Eg. on mobil devices - it is better to have
     modal width = max-width or full screen
-    To allow this a global function is defined and called to
+    To allow this a global function and variable are defined and called/checked to
     allow modifications of the modal-options
 
-    $.MODEL_ADJUST_OPTIONS = function(modalOptions, modal) return modal-options
+    $.MODAL_ADJUST_OPTIONS = function(modalOptions, modal) return modal-options
+
+    $.MODAL_NO_VERTICAL_MARGIN = false  If true all modal have vertical margin = 0
 
     By default it return the original options but they can be overwriten by applications/packages
     **********************************************************/
-    $.MODEL_ADJUST_OPTIONS = function(modalOptions/*, modal*/){
+    $.MODAL_ADJUST_OPTIONS = function(modalOptions/*, modal*/){
         return modalOptions;
     };
+    $.MODAL_NO_VERTICAL_MARGIN = false;
 
     /**********************************************************
     MAX-HEIGHT ISSUES ON SAFARI (AND OTHER BROWSER ON IOS)
@@ -62674,7 +62676,7 @@ jquery-bootstrap-modal-promise.js
     options.maxWidth  : If true the width of the modal will always be 100% minus some margin
     options.fullWidth : If true the width of the modal will always be 100%
     options.fullScreen: If true the modal will fill the hole screen without border. width = height = 100%
-
+    options.fullScreenWithBorder: As fullScreen but with borders
     options.width     : Set if different from 300
 
     ******************************************************/
@@ -63577,18 +63579,13 @@ jquery-bootstrap-modal-promise.js
             });
 
         //Adjust options by MODEL_ADJUST_OPTIONS
-        options = $.MODEL_ADJUST_OPTIONS(options, this);
+        options = $.MODAL_ADJUST_OPTIONS(options, this);
 
         //Set default removeOnClose
         if ( (options.defaultRemoveOnClose || options.defaultRemove) &&
              (options.remove === undefined) &&
              (options.removeOnClose === undefined) )
             options.remove = !!options.defaultRemoveOnClose || !!options.defaultRemove;
-
-        //Set options for full width
-        if (options.fullWidth){
-            options.relativeHeightOffset = 0;
-        }
 
         //Set options for full screen with border
         if (options.fullScreenWithBorder)
@@ -63599,6 +63596,13 @@ jquery-bootstrap-modal-promise.js
             options.maxWidth             = true;
             options.alwaysMaxHeight      = true;
             options.relativeHeightOffset = 0;
+        }
+
+        //Check $.MODAL_NO_VERTICAL_MARGIN
+        if ($.MODAL_NO_VERTICAL_MARGIN){
+            options.relativeHeightOffset = 0;
+            if (options.extended)
+                options.extended.relativeHeightOffset = 0;
         }
 
 
