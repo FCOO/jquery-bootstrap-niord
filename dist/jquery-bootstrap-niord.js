@@ -1339,10 +1339,11 @@
     /******************************************************
     Messages._showAllButtonOptions
     ******************************************************/
-    ns.Messages.prototype._showAllButtonOptions = function(){
+    ns.Messages.prototype._showAllButtonOptions = function(className){
         return {
             icon   : 'fa-th-list',
             text   : {da:'Vis alle', en:'Show all'},
+            class  : className,
             onClick: this.asModal.bind( this )
         };
     };
