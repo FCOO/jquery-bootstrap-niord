@@ -1108,7 +1108,7 @@
 
         //First modal => add list-button
         if (!_messages.bsModalMessage)
-            options.buttons = [ _messages._showAllButtonOptions() ];
+            options.buttons = [ _messages._showAllButtonOptions('min-width-5em') ];
 
         _messages.bsModalMessage =
             _messages.bsModalMessage ?
