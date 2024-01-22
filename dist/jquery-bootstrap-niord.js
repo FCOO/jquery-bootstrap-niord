@@ -834,7 +834,6 @@
             {
                 type: 'accordion',
                 list: messageContent,
-
                 onChange: dontSaveOpenPart ? null :
                     $.proxy(function(partIdList, $acc, status){
 
@@ -1038,7 +1037,7 @@
         var result = {
                 header      : this.bsHeaderOptions('NORMAL'),
                 fixedContent: this.bsFixedContent('NORMAL'),
-                content     : this.bsAccordionOptions({fullDate: true}),
+                content     : this.bsAccordionOptions({fullDate: true}, {multiOpen: true}),
 
                 footer      : ns.options.modalFooter,
 
@@ -1108,7 +1107,7 @@
 
         //First modal => add list-button
         if (!_messages.bsModalMessage)
-            options.buttons = [ _messages._showAllButtonOptions('min-width-5em') ];
+            options.buttons = [ _messages._showAllButtonOptions() ];
 
         _messages.bsModalMessage =
             _messages.bsModalMessage ?
@@ -1117,13 +1116,13 @@
 
         _messages.bsModalMessage.show();
 
-        //Find last button = "Show list"
+        //Find last button = "Show all"
         if (!_messages.showMessagesButton){
             var buttons = _messages.bsModalMessage.bsModal.$buttons;
             _messages.showMessagesButton = buttons[buttons.length-1];
         }
 
-        //Hide the "Show list"-button if messages-list is already visible
+        //Hide the "Show all"-button if messages-list is already visible
         _messages.showMessagesButton.toggle(
             !(_messages.bsModal && _messages.bsModal.hasClass('show'))
         );
@@ -1220,12 +1219,48 @@
 */
 
     /******************************************************
+    Messages.tableColumns
+    ******************************************************/
+    ns.Messages.prototype.tableColumns = function(small){
+        return small ?
+            [{
+                id: 'id', noWrap: false, header: 'No shown', createContent: $.proxy(this._createTableCellContent, this),
+                sortable: true, sortBy: $.proxy(this._sortMessage, this)
+            }] :
+            [
+                { id: 'shortId', noWrap: true,   header: 'Id', align: 'center' },
+                { id: 'date',    noWrap: true,   header: {da:'Dato', en:'Date'},   align: 'center', vfFormat: ns.options.vfFormatId.date, sortable: true, sortBy:'moment_date', sortDefault: true/*'desc'*/},
+                { id: 'area',    noWrap: false,  header: {text:'niord:AREA'},      align: 'left',
+                    //Options for sorting by area
+                    sortable: true,
+                    sortHeader: true,
+                    _sortIndex:1000,
+                    updateAfterSorting: true,
+
+                    //Sort by full area-title
+                    getSortContent: function(content){ return content.full; },
+
+                    //Display only sub-area when list is sorted by area
+                    createContent: function(content, $td, sortBy){
+                        $td._bsAddHtml(sortBy ? content.sub : content.full);
+                    },
+
+                    //Use default area-title as header for sorted groups
+                    getHeaderContent: function(content){ return content.normal; },
+                    createHeaderContent: function(content, $span){ $span._bsAddHtml(content); },
+                },
+                { id: 'title',   noWrap: false,  header: {da:'Titel', en:'Title'}, align: 'left',   _sortable: true, _sortHeader: true, _sortIndex:1000}
+            ];
+    };
+
+
+    /******************************************************
     Messages.asModal
     Will display a list of all messages as
     1: One column with all info, or
     2: Four columns with id, date, area, and title
     ******************************************************/
-    ns.Messages.prototype.asModal = function(modalOptions){
+    ns.Messages.prototype.asModal = function(){
         var _this = this;
 
         //Close any message-modal
@@ -1242,39 +1277,7 @@
                 allowZeroSelected: false,
                 allowReselect    : true,
                 onChange         : $.proxy(this.messageAsModal, this ),
-
-
-
-                columns: displayInSmallTable ?
-                    [{
-                        id: 'id', noWrap: false, header: 'No shown', createContent: $.proxy(this._createTableCellContent, this),
-                        sortable: true, sortBy: $.proxy(this._sortMessage, this)
-                    }] :
-                    [
-                        { id: 'shortId', noWrap: true,   header: 'Id', align: 'center' },
-                        { id: 'date',    noWrap: true,   header: {da:'Dato', en:'Date'},   align: 'center', vfFormat: ns.options.vfFormatId.date, sortable: true, sortBy:'moment_date', sortDefault: true/*'desc'*/},
-                        { id: 'area',    noWrap: false,  header: {text:'niord:AREA'},      align: 'left',
-                            //Options for sorting by area
-                            sortable: true,
-                            sortHeader: true,
-                            _sortIndex:1000,
-                            updateAfterSorting: true,
-
-                            //Sort by full area-title
-                            getSortContent: function(content){ return content.full; },
-
-                            //Display only sub-area when list is sorted by area
-                            createContent: function(content, $td, sortBy){
-                                $td._bsAddHtml(sortBy ? content.sub : content.full);
-                            },
-
-                            //Use default area-title as header for sorted groups
-                            getHeaderContent: function(content){ return content.normal; },
-                            createHeaderContent: function(content, $span){ $span._bsAddHtml(content); },
-                        },
-
-                        { id: 'title',   noWrap: false,  header: {da:'Titel', en:'Title'}, align: 'left',   _sortable: true, _sortHeader: true, _sortIndex:1000},
-                    ],
+                columns          : this.tableColumns(displayInSmallTable)
             };
 
             //Create table and add data
@@ -1328,7 +1331,7 @@
         }
 
         //Filter and display the modal with the table
-        this.filter(modalOptions ? modalOptions.filterOptions : null);
+// HER>         this.filter(modalOptions ? modalOptions.filterOptions : null);
 
         this.bsModal.show();
 
@@ -1339,11 +1342,11 @@
     /******************************************************
     Messages._showAllButtonOptions
     ******************************************************/
-    ns.Messages.prototype._showAllButtonOptions = function(className){
+    ns.Messages.prototype._showAllButtonOptions = function(){
         return {
             icon   : 'fa-th-list',
             text   : {da:'Vis alle', en:'Show all'},
-            class  : className,
+            class  : 'min-width-5em',
             onClick: this.asModal.bind( this )
         };
     };
@@ -1401,6 +1404,7 @@
             message.asModal();
         });
     };
+
 
     /******************************************************
     Messages.filterAsModalForm

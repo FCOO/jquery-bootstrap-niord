@@ -102,8 +102,12 @@
         window.Niord.options.onClickCoordinate  = function(coord, text, messageId){
             latLngFormat.setFormat(window.latLngFormat.LATLNGFORMAT_DMM);
             $.bsNoty({text:text+ '<br>'+ latLngFormat(coord[1], coord[0]).format()});
-
         }
+        
+
+        window.Niord.options.getDefaultMap  = function(){
+        }
+        
 /*
         moment.sfAddTimezone({id:'Pacific/Honolulu'});
         moment.sfSetFormat({ timezone: 'Pacific/Honolulu' });

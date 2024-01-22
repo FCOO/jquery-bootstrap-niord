@@ -834,7 +834,6 @@
             {
                 type: 'accordion',
                 list: messageContent,
-
                 onChange: dontSaveOpenPart ? null :
                     $.proxy(function(partIdList, $acc, status){
 
@@ -1038,7 +1037,7 @@
         var result = {
                 header      : this.bsHeaderOptions('NORMAL'),
                 fixedContent: this.bsFixedContent('NORMAL'),
-                content     : this.bsAccordionOptions({fullDate: true}),
+                content     : this.bsAccordionOptions({fullDate: true}, {multiOpen: true}),
 
                 footer      : ns.options.modalFooter,
 
@@ -1108,7 +1107,7 @@
 
         //First modal => add list-button
         if (!_messages.bsModalMessage)
-            options.buttons = [ _messages._showAllButtonOptions('min-width-5em') ];
+            options.buttons = [ _messages._showAllButtonOptions() ];
 
         _messages.bsModalMessage =
             _messages.bsModalMessage ?
@@ -1117,13 +1116,13 @@
 
         _messages.bsModalMessage.show();
 
-        //Find last button = "Show list"
+        //Find last button = "Show all"
         if (!_messages.showMessagesButton){
             var buttons = _messages.bsModalMessage.bsModal.$buttons;
             _messages.showMessagesButton = buttons[buttons.length-1];
         }
 
-        //Hide the "Show list"-button if messages-list is already visible
+        //Hide the "Show all"-button if messages-list is already visible
         _messages.showMessagesButton.toggle(
             !(_messages.bsModal && _messages.bsModal.hasClass('show'))
         );
