@@ -54,7 +54,7 @@
             if (category != lastCategory){
                 //Add new group of publications
                 var accordionOptions = {
-                    header : publication.category.name,
+                    header : {text: publication.category.name},
                     content: {
                         type     : 'list',
                         noBorder : false,

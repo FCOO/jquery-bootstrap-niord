@@ -157,6 +157,13 @@
         }).appendTo($body);
 
 
+        $.bsButton({
+            text: {da: 'Vis allePUB', en:'Show all PUB'},
+            onClick: function(){ 
+                window.Niord.publications.asModal(); 
+            }
+        }).appendTo($body);
+
 
 
         //***************************************************
