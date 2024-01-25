@@ -78,14 +78,16 @@
             return !!value && ($.isFunction(value) ? value() : !!value);
         },
 
+
+        //Option to set if domain "fa" (firing areas) and "fe" (actual firing exercises) are combined
+        fa_fe_combined: false,
+
         //Icons for filter and reset-buttons
         filterIcon     : 'fa-filter',
         resetFilterIcon: null,
 
-
         //Type of table with list of all messages
         smallTableWithAllMessages: false,    //Boolean or function. If true the table with all messages is single column
-
 
         //function to be called when a coordinate in the modal is clicked
         onClickCoordinate: null //function(coordinate, text, messageId)
@@ -105,14 +107,21 @@
 
     //Translate the different domains and part headers
     i18next.addPhrases('niord', {
-        'nw'         : {da:'Navigationsadvarsel',            en:'Navigational Warning'   }, //domain = niord-nw: All Danish navigational warnings are produced in the "niord-nw" domain.
-        'nw_plural'  : {da:'Navigationsadvarsler',           en:'Navigational Warnings'  },
-        'nm'         : {da:'Efterretning for Søfarende',     en:'Notice to Mariners'     }, //domain = niord-nm: All Danish Notices to Mariners are produced in the "niord-nm" domain.
-        'nm_plural'  : {da:'Efterretninger for Søfarende',   en:'Notices to Mariners'    },
-        'fa'         : {da:'Skydeområde',                    en:'Firing Area'            }, //domain = niord-fa: All Danish firing areas are defined as miscellaneous Notices to Mariners in the "niord-fa" domain.
-        'fa_plural'  : {da:'Skydeområder',                   en:'Firing Areas'           },
-        'fe'         : {da:'Skydeøvelse',                    en:'Firing Exercise'        }, //domain = niord-fe: The actual firing exercises are maintained as local navigational warnings in the "niord-fe" domain.
-        'fe_plural'  : {da:'Skydeøvelser',                   en:'Firing Exercises'       },
+        'nw'          : {da:'Navigationsadvarsel',            en:'Navigational Warning'   }, //domain = niord-nw: All Danish navigational warnings are produced in the "niord-nw" domain.
+        'nw_plural'   : {da:'Navigationsadvarsler',           en:'Navigational Warnings'  },
+        'nm'          : {da:'Efterretning for Søfarende',     en:'Notice to Mariners'     }, //domain = niord-nm: All Danish Notices to Mariners are produced in the "niord-nm" domain.
+        'nm_plural'   : {da:'Efterretninger for Søfarende',   en:'Notices to Mariners'    },
+        'fa'          : {da:'Skydeområde',                    en:'Firing Area'            }, //domain = niord-fa: All Danish firing areas are defined as miscellaneous Notices to Mariners in the "niord-fa" domain.
+        'fa_plural'   : {da:'Skydeområder',                   en:'Firing Areas'           },
+        'fe'          : {da:'Skydeøvelse',                    en:'Firing Exercise'        }, //domain = niord-fe: The actual firing exercises are maintained as local navigational warnings in the "niord-fe" domain.
+        'fe_plural'   : {da:'Skydeøvelser',                   en:'Firing Exercises'       },
+
+        //Combined fa and fe
+        'fa-fe'       : {da:'Skydeområde/øvelse',             en:'Firing Area/Exercise'      },
+        'fa-fe_plural': {da:'Skydeområder og -øvelser',       en:'Firing Areas and Exercises'},
+
+
+
 
         'MAP'        : {da: 'Kort',          en:'Map'          },
         'REFERENCE'  : {da: 'Referencer',    en:'References'   },
@@ -983,7 +992,7 @@
             return false;
 
         //type vs this.domainId
-        if (filterOptions.domainId && (filterOptions.domainId != 'ALL') && (this.domainId.toUpperCase() != filterOptions.domainId.toUpperCase()))
+        if (filterOptions.domainId && (filterOptions.domainId != 'ALL') && !filterOptions.domainId.toUpperCase().includes(this.domainId.toUpperCase()) )
             result = false;
 
         if (result)
@@ -1044,6 +1053,8 @@
                 flexWidth   : true,
                 extraWidth  : true,
 
+                onClose     : this.bsModalOnClose.bind(this),
+
                 static               : false,
                 modalContentClassName: 'niord-modal-content',
 
@@ -1066,6 +1077,10 @@
         return $.extend(true, result, modalOptions || {} );
     },
 
+    ns.Message.prototype.bsModalOnClose = function(){
+        this.messages.forceFilterDomain = null;
+        return true;
+    },
 
     /******************************************************
     Message.asModalSmall
@@ -1106,9 +1121,17 @@
         historyList._callOnUpdate();
 
         //First modal => add list-button
-        if (!_messages.bsModalMessage)
-            options.buttons = [ _messages._showAllButtonOptions() ];
+        if (!_messages.bsModalMessage){
+            options.buttons = [];
+            if (ns.publications)
+                options.buttons.push( ns.publications._showAllButtonOptions() );
+            options.buttons.push( _messages._showAllButtonOptions() );
+        }
 
+        //Set messages to only show message of same domain in show-all-modal
+        _messages.forceFilterDomain = this.domainId;
+
+        //Create or update the modal
         _messages.bsModalMessage =
             _messages.bsModalMessage ?
                 _messages.bsModalMessage.update(options) :

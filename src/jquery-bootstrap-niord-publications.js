@@ -18,7 +18,8 @@
 
     //Translate the title for the differnet publication-groups
     i18next.addPhrases('niord', {
-        'publications': {da: 'Aktive EfS og publikationer',    en:'Active NtM and Publications'   },
+        'publications': {da: 'Aktive EfS og publikationer', en:'Active NtM and Publications' },
+        'publ'        : {da: 'Publ.',                       en:'Publ.'                       },
     });
 
     /******************************************************
@@ -69,6 +70,15 @@
             list.push(publication._listItem());
         });
         $.bsModal( options );
+    };
+
+    ns.Publications.prototype._showAllButtonOptions = function(){
+        return {
+            icon   : ns.options.partIcon.PUBLICATION,
+            text   : 'niord:publ',
+            class  : 'min-width-5em',
+            onClick: this.asModal.bind( this )
+        };
     };
 
 

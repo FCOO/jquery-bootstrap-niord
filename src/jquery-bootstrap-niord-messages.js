@@ -127,7 +127,10 @@
     2: Four columns with id, date, area, and title
     ******************************************************/
     ns.Messages.prototype.asModal = function(){
-        var _this = this;
+        var _this = this,
+            forceFilterDomain = this.forceFilterDomain;
+
+        this.forceFilterDomain = null;
 
         //Close any message-modal
         if (this.bsModalMessage)
@@ -152,12 +155,17 @@
                 _this.bsTable.addRow( message.asTableRow() );
             });
 
+            var buttons = [];
+            if (ns.publications)
+                buttons.push( ns.publications._showAllButtonOptions() );
+            buttons.push(
+                {icon: ns.options.resetFilterIcon, text:{da:'Nulstil', en:'Reset'}, onClick: $.proxy(this.resetFilter, this)},
+                {icon: ns.options.filterIcon,      text:{da:'Filter', en:'Filter'}, onClick: $.proxy(this.filterAsModalForm, this)}
+            );
+
             var bsModalOptions = {
                 header     : '',
-                buttons    : [
-                    {icon: ns.options.resetFilterIcon, text:{da:'Nulstil', en:'Reset'}, onClick: $.proxy(this.resetFilter, this)},
-                    {icon: ns.options.filterIcon,      text:{da:'Filter', en:'Filter'}, onClick: $.proxy(this.filterAsModalForm, this)}
-                ],
+                buttons    : buttons,
                 flexWidth  : true,
                 megaWidth  : true,
 
@@ -176,7 +184,7 @@
 
             //Create the modal
             this.bsModal = this.bsTable.asModal( bsModalOptions );
-
+            this.$bsModalHeader = this.bsModal.bsModal.$header;
             this.$bsModalFooter = this.bsModal.bsModal.$footer;
 
             //In small-mode: Hide first column and hide table header and add selectbox with sorting options
@@ -196,13 +204,26 @@
             }
         }
 
-        //Filter and display the modal with the table
-// HER>         this.filter(modalOptions ? modalOptions.filterOptions : null);
+        //If forceFilterDomain is set => Filter by domain
+        if (forceFilterDomain){
+            var filterDomainId = 'ALL';
 
+            getDomainIdList().forEach( id => {
+                if ( id.toUpperCase().includes(forceFilterDomain.toUpperCase()) )
+                    filterDomainId = id;
+            });
+
+            this.filter({
+                domainId: filterDomainId,
+                area    : 'ALL',
+                chart   : 'ALL',
+                category: 'ALL'
+            });
+        }
+
+        //Display the modal with the table
         this.bsModal.show();
-
-
-
+        return this;
     };
 
     /******************************************************
@@ -276,6 +297,10 @@
     Messages.filterAsModalForm
     Edit a filter-record = {domainId, area, chart, category}
     ******************************************************/
+    function getDomainIdList(){
+        return ns.options.fa_fe_combined ? ['nw', 'nm', 'fa-fe'] : ['nw', 'nm', 'fe', 'fa'];
+    }
+
     ns.Messages.prototype.filterAsModalForm = function(){
 
         if (!this.filterBsModalForm){
@@ -315,11 +340,10 @@
                 items    : [defaultSelectItem()]
             };
 
-            $.each(['nw', 'fe', 'nm', 'fa'], function(index, id){
+            getDomainIdList().forEach( id => {
                 domainOptions.items.push({
-                    id     : id,
-                    text   : 'niord:'+id,
-                    i18next: {count: 2}
+                    id  : id,
+                    text: 'niord:'+id+'_plural'
                 });
             });
             modalEditOptions.content.push(domainOptions);
@@ -383,6 +407,7 @@
         var _this         = this,
             textArray     = [{icon: ns.options.filterIcon}],
             filterOptions = this.filterOptions,
+            header        = null,
             filterExist   = false;
 
         $.each(this.filterOptions, function(id, value){
@@ -393,7 +418,8 @@
                     postfix  = null;
                 switch (id){
                     case 'domainId':
-                        valueObj = {text: 'niord:'+value, i18next:{count:2}};
+                        valueObj = {text: 'niord:'+value+'_plural'};
+                        header = valueObj;
                         if (hasValue(filterOptions.area) || hasValue(filterOptions.chart))
                             postfix = {da:'i', en:'in'};
 
@@ -426,6 +452,11 @@
                     textArray.push(postfix);
            }
         });
+
+        //Update header and footer with filter-info
+        $( this.$bsModalHeader.find('span:first-child') )
+            .empty()
+            .html(header ? i18next.t(header.text) : '&nbsp;');
 
         this.$bsModalFooter
             .empty()

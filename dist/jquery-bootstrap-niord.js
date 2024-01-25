@@ -78,14 +78,16 @@
             return !!value && ($.isFunction(value) ? value() : !!value);
         },
 
+
+        //Option to set if domain "fa" (firing areas) and "fe" (actual firing exercises) are combined
+        fa_fe_combined: false,
+
         //Icons for filter and reset-buttons
         filterIcon     : 'fa-filter',
         resetFilterIcon: null,
 
-
         //Type of table with list of all messages
         smallTableWithAllMessages: false,    //Boolean or function. If true the table with all messages is single column
-
 
         //function to be called when a coordinate in the modal is clicked
         onClickCoordinate: null //function(coordinate, text, messageId)
@@ -105,14 +107,21 @@
 
     //Translate the different domains and part headers
     i18next.addPhrases('niord', {
-        'nw'         : {da:'Navigationsadvarsel',            en:'Navigational Warning'   }, //domain = niord-nw: All Danish navigational warnings are produced in the "niord-nw" domain.
-        'nw_plural'  : {da:'Navigationsadvarsler',           en:'Navigational Warnings'  },
-        'nm'         : {da:'Efterretning for Søfarende',     en:'Notice to Mariners'     }, //domain = niord-nm: All Danish Notices to Mariners are produced in the "niord-nm" domain.
-        'nm_plural'  : {da:'Efterretninger for Søfarende',   en:'Notices to Mariners'    },
-        'fa'         : {da:'Skydeområde',                    en:'Firing Area'            }, //domain = niord-fa: All Danish firing areas are defined as miscellaneous Notices to Mariners in the "niord-fa" domain.
-        'fa_plural'  : {da:'Skydeområder',                   en:'Firing Areas'           },
-        'fe'         : {da:'Skydeøvelse',                    en:'Firing Exercise'        }, //domain = niord-fe: The actual firing exercises are maintained as local navigational warnings in the "niord-fe" domain.
-        'fe_plural'  : {da:'Skydeøvelser',                   en:'Firing Exercises'       },
+        'nw'          : {da:'Navigationsadvarsel',            en:'Navigational Warning'   }, //domain = niord-nw: All Danish navigational warnings are produced in the "niord-nw" domain.
+        'nw_plural'   : {da:'Navigationsadvarsler',           en:'Navigational Warnings'  },
+        'nm'          : {da:'Efterretning for Søfarende',     en:'Notice to Mariners'     }, //domain = niord-nm: All Danish Notices to Mariners are produced in the "niord-nm" domain.
+        'nm_plural'   : {da:'Efterretninger for Søfarende',   en:'Notices to Mariners'    },
+        'fa'          : {da:'Skydeområde',                    en:'Firing Area'            }, //domain = niord-fa: All Danish firing areas are defined as miscellaneous Notices to Mariners in the "niord-fa" domain.
+        'fa_plural'   : {da:'Skydeområder',                   en:'Firing Areas'           },
+        'fe'          : {da:'Skydeøvelse',                    en:'Firing Exercise'        }, //domain = niord-fe: The actual firing exercises are maintained as local navigational warnings in the "niord-fe" domain.
+        'fe_plural'   : {da:'Skydeøvelser',                   en:'Firing Exercises'       },
+
+        //Combined fa and fe
+        'fa-fe'       : {da:'Skydeområde/øvelse',             en:'Firing Area/Exercise'      },
+        'fa-fe_plural': {da:'Skydeområder og -øvelser',       en:'Firing Areas and Exercises'},
+
+
+
 
         'MAP'        : {da: 'Kort',          en:'Map'          },
         'REFERENCE'  : {da: 'Referencer',    en:'References'   },
@@ -983,7 +992,7 @@
             return false;
 
         //type vs this.domainId
-        if (filterOptions.domainId && (filterOptions.domainId != 'ALL') && (this.domainId.toUpperCase() != filterOptions.domainId.toUpperCase()))
+        if (filterOptions.domainId && (filterOptions.domainId != 'ALL') && !filterOptions.domainId.toUpperCase().includes(this.domainId.toUpperCase()) )
             result = false;
 
         if (result)
@@ -1044,6 +1053,8 @@
                 flexWidth   : true,
                 extraWidth  : true,
 
+                onClose     : this.bsModalOnClose.bind(this),
+
                 static               : false,
                 modalContentClassName: 'niord-modal-content',
 
@@ -1066,6 +1077,10 @@
         return $.extend(true, result, modalOptions || {} );
     },
 
+    ns.Message.prototype.bsModalOnClose = function(){
+        this.messages.forceFilterDomain = null;
+        return true;
+    },
 
     /******************************************************
     Message.asModalSmall
@@ -1106,9 +1121,17 @@
         historyList._callOnUpdate();
 
         //First modal => add list-button
-        if (!_messages.bsModalMessage)
-            options.buttons = [ _messages._showAllButtonOptions() ];
+        if (!_messages.bsModalMessage){
+            options.buttons = [];
+            if (ns.publications)
+                options.buttons.push( ns.publications._showAllButtonOptions() );
+            options.buttons.push( _messages._showAllButtonOptions() );
+        }
 
+        //Set messages to only show message of same domain in show-all-modal
+        _messages.forceFilterDomain = this.domainId;
+
+        //Create or update the modal
         _messages.bsModalMessage =
             _messages.bsModalMessage ?
                 _messages.bsModalMessage.update(options) :
@@ -1261,7 +1284,10 @@
     2: Four columns with id, date, area, and title
     ******************************************************/
     ns.Messages.prototype.asModal = function(){
-        var _this = this;
+        var _this = this,
+            forceFilterDomain = this.forceFilterDomain;
+
+        this.forceFilterDomain = null;
 
         //Close any message-modal
         if (this.bsModalMessage)
@@ -1286,12 +1312,17 @@
                 _this.bsTable.addRow( message.asTableRow() );
             });
 
+            var buttons = [];
+            if (ns.publications)
+                buttons.push( ns.publications._showAllButtonOptions() );
+            buttons.push(
+                {icon: ns.options.resetFilterIcon, text:{da:'Nulstil', en:'Reset'}, onClick: $.proxy(this.resetFilter, this)},
+                {icon: ns.options.filterIcon,      text:{da:'Filter', en:'Filter'}, onClick: $.proxy(this.filterAsModalForm, this)}
+            );
+
             var bsModalOptions = {
                 header     : '',
-                buttons    : [
-                    {icon: ns.options.resetFilterIcon, text:{da:'Nulstil', en:'Reset'}, onClick: $.proxy(this.resetFilter, this)},
-                    {icon: ns.options.filterIcon,      text:{da:'Filter', en:'Filter'}, onClick: $.proxy(this.filterAsModalForm, this)}
-                ],
+                buttons    : buttons,
                 flexWidth  : true,
                 megaWidth  : true,
 
@@ -1310,7 +1341,7 @@
 
             //Create the modal
             this.bsModal = this.bsTable.asModal( bsModalOptions );
-
+            this.$bsModalHeader = this.bsModal.bsModal.$header;
             this.$bsModalFooter = this.bsModal.bsModal.$footer;
 
             //In small-mode: Hide first column and hide table header and add selectbox with sorting options
@@ -1330,13 +1361,26 @@
             }
         }
 
-        //Filter and display the modal with the table
-// HER>         this.filter(modalOptions ? modalOptions.filterOptions : null);
+        //If forceFilterDomain is set => Filter by domain
+        if (forceFilterDomain){
+            var filterDomainId = 'ALL';
 
+            getDomainIdList().forEach( id => {
+                if ( id.toUpperCase().includes(forceFilterDomain.toUpperCase()) )
+                    filterDomainId = id;
+            });
+
+            this.filter({
+                domainId: filterDomainId,
+                area    : 'ALL',
+                chart   : 'ALL',
+                category: 'ALL'
+            });
+        }
+
+        //Display the modal with the table
         this.bsModal.show();
-
-
-
+        return this;
     };
 
     /******************************************************
@@ -1410,6 +1454,10 @@
     Messages.filterAsModalForm
     Edit a filter-record = {domainId, area, chart, category}
     ******************************************************/
+    function getDomainIdList(){
+        return ns.options.fa_fe_combined ? ['nw', 'nm', 'fa-fe'] : ['nw', 'nm', 'fe', 'fa'];
+    }
+
     ns.Messages.prototype.filterAsModalForm = function(){
 
         if (!this.filterBsModalForm){
@@ -1449,11 +1497,10 @@
                 items    : [defaultSelectItem()]
             };
 
-            $.each(['nw', 'fe', 'nm', 'fa'], function(index, id){
+            getDomainIdList().forEach( id => {
                 domainOptions.items.push({
-                    id     : id,
-                    text   : 'niord:'+id,
-                    i18next: {count: 2}
+                    id  : id,
+                    text: 'niord:'+id+'_plural'
                 });
             });
             modalEditOptions.content.push(domainOptions);
@@ -1517,6 +1564,7 @@
         var _this         = this,
             textArray     = [{icon: ns.options.filterIcon}],
             filterOptions = this.filterOptions,
+            header        = null,
             filterExist   = false;
 
         $.each(this.filterOptions, function(id, value){
@@ -1527,7 +1575,8 @@
                     postfix  = null;
                 switch (id){
                     case 'domainId':
-                        valueObj = {text: 'niord:'+value, i18next:{count:2}};
+                        valueObj = {text: 'niord:'+value+'_plural'};
+                        header = valueObj;
                         if (hasValue(filterOptions.area) || hasValue(filterOptions.chart))
                             postfix = {da:'i', en:'in'};
 
@@ -1560,6 +1609,11 @@
                     textArray.push(postfix);
            }
         });
+
+        //Update header and footer with filter-info
+        $( this.$bsModalHeader.find('span:first-child') )
+            .empty()
+            .html(header ? i18next.t(header.text) : '&nbsp;');
 
         this.$bsModalFooter
             .empty()
@@ -1614,7 +1668,8 @@
 
     //Translate the title for the differnet publication-groups
     i18next.addPhrases('niord', {
-        'publications': {da: 'Aktive EfS og publikationer',    en:'Active NtM and Publications'   },
+        'publications': {da: 'Aktive EfS og publikationer', en:'Active NtM and Publications' },
+        'publ'        : {da: 'Publ.',                       en:'Publ.'                       },
     });
 
     /******************************************************
@@ -1650,7 +1705,7 @@
             if (category != lastCategory){
                 //Add new group of publications
                 var accordionOptions = {
-                    header : publication.category.name,
+                    header : {text: publication.category.name},
                     content: {
                         type     : 'list',
                         noBorder : false,
@@ -1665,6 +1720,15 @@
             list.push(publication._listItem());
         });
         $.bsModal( options );
+    };
+
+    ns.Publications.prototype._showAllButtonOptions = function(){
+        return {
+            icon   : ns.options.partIcon.PUBLICATION,
+            text   : 'niord:publ',
+            class  : 'min-width-5em',
+            onClick: this.asModal.bind( this )
+        };
     };
 
 

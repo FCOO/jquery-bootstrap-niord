@@ -104,7 +104,7 @@
             $.bsNoty({text:text+ '<br>'+ latLngFormat(coord[1], coord[0]).format()});
         }
         
-
+        window.Niord.options.fa_fe_combined = true;
        
 /*
         moment.sfAddTimezone({id:'Pacific/Honolulu'});
@@ -145,6 +145,12 @@
             text: {da: 'Vis én', en:'Show one'},
             onClick: function(){
                 messages.messageAsModal('NM-199-19');
+            }
+        }).appendTo($body);
+        $.bsButton({
+            text: {da: 'Vis en anden én', en:'Show another one'},
+            onClick: function(){
+                messages.messageAsModal('FA/ES-D-139 2024');
             }
         }).appendTo($body);
 
