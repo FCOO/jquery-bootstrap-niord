@@ -38,6 +38,7 @@
                     text: 'niord:publications'
                 },
                 flexWidth: true,
+                extraWidth: true,
                 content: {
                     type     : 'accordion',
                     multiOpen: true,

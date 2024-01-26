@@ -180,20 +180,25 @@
     //Link to list of message = Messages.asModal: Create and open a modal-window with all messages, filtered and sorted,
     //OR
     //Link to a message = Message.asModal: Check, load and add message to history-list
-    function messagesAsModal(){
+    function messagesAsModal_viaLink(){
 
         var $this        = $(this),
             messages     = $this.data('niord-link-messages'),
             linkId       = $this.data('niord-link-id'),
-            linkValue    = $this.data('niord-link-value'),
-            modalOptions;
+            linkValue    = $this.data('niord-link-value');
 
         if (linkId == 'message')
                 messages.messageAsModal(linkValue);
         else {
-            modalOptions = {filterOptions:{}};
-            modalOptions.filterOptions[linkId] = linkValue;
-            messages.asModal(modalOptions);
+            messages.forceFilterDomain = null;
+            messages.forceFilter = {
+                domainId: 'ALL',
+                area    : 'ALL',
+                chart   : 'ALL',
+                category: 'ALL'
+            };
+            messages.forceFilter[linkId] = linkValue;
+            messages.asModal();
         }
     }
 
@@ -281,7 +286,7 @@
             };
 
         if (linkId && linkValue && currentMessages){
-            result.link = messagesAsModal;
+            result.link = messagesAsModal_viaLink;
             result.textData = {
                 'niord-link-id'      : linkId,
                 'niord-link-value'   : linkValue,
@@ -1153,6 +1158,30 @@
         return this.messages.bsModalMessage;
     };
 
+
+    /******************************************************
+    Message._asModal
+    Open messages-modal filtered by this' domain
+    ******************************************************/
+    ns.Message.prototype.messagesAsModal = function(){
+        var _messages = this.messages;
+        _messages.forceFilterDomain = this.domainId;
+        _messages.asModal();
+        return this;
+    };
+
+
+    /******************************************************
+    Message._messages_showAllButtonOptions
+    Options for a button that opens messages-modal filtered by this' domain
+    ******************************************************/
+    ns.Message.prototype._messages_showAllButtonOptions = function(){
+        var result = this.messages._showAllButtonOptions();
+        result.onClick = this.messagesAsModal.bind(this);
+        return result;
+    };
+
+
 } (jQuery, this.i18next, this, document));
 ;
 /****************************************************************************
@@ -1285,9 +1314,11 @@
     ******************************************************/
     ns.Messages.prototype.asModal = function(){
         var _this = this,
-            forceFilterDomain = this.forceFilterDomain;
+            forceFilterDomain = this.forceFilterDomain,
+            forceFilter       = this.forceFilter || {};
 
         this.forceFilterDomain = null;
+        this.forceFilter       = null;
 
         //Close any message-modal
         if (this.bsModalMessage)
@@ -1346,7 +1377,8 @@
 
             //In small-mode: Hide first column and hide table header and add selectbox with sorting options
             if (displayInSmallTable){
-                this.bsTable.$theadClone.parent().hide();
+                this.bsTable.$thead.hide();
+                this.bsTable.$theadClone.hide();
                 $.bsSelectBox({
                     fullWidth : true,
                     selectedId: this.sortBsTableBy || 'sort_date_desc',
@@ -1364,19 +1396,19 @@
         //If forceFilterDomain is set => Filter by domain
         if (forceFilterDomain){
             var filterDomainId = 'ALL';
-
             getDomainIdList().forEach( id => {
                 if ( id.toUpperCase().includes(forceFilterDomain.toUpperCase()) )
                     filterDomainId = id;
             });
-
-            this.filter({
+            forceFilter = {
                 domainId: filterDomainId,
                 area    : 'ALL',
                 chart   : 'ALL',
                 category: 'ALL'
-            });
+            };
         }
+
+        this.filter(forceFilter);
 
         //Display the modal with the table
         this.bsModal.show();
@@ -1688,6 +1720,7 @@
                     text: 'niord:publications'
                 },
                 flexWidth: true,
+                extraWidth: true,
                 content: {
                     type     : 'accordion',
                     multiOpen: true,

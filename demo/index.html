@@ -91,7 +91,7 @@
         window.Niord.options.normalModalExtendable  = true;
         window.Niord.options.modalIsExtended        = !window.bsIsTouch;
 
-        window.Niord.options.smallTableWithAllMessages = window.bsIsTouch;
+        window.Niord.options.smallTableWithAllMessages = true;//window.bsIsTouch;
 
         window.Niord.options.createMap = function($element, message){
             $element.text('Antal geoJSON = ' + message.geoJSON.features.length);
@@ -157,7 +157,6 @@
         $.bsButton({
             text: {da: 'Vis alle', en:'Show all'},
             onClick: function(){ 
-                console.log(messages);
                 messages.asModal(); 
             }
         }).appendTo($body);

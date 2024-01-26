@@ -128,9 +128,11 @@
     ******************************************************/
     ns.Messages.prototype.asModal = function(){
         var _this = this,
-            forceFilterDomain = this.forceFilterDomain;
+            forceFilterDomain = this.forceFilterDomain,
+            forceFilter       = this.forceFilter || {};
 
         this.forceFilterDomain = null;
+        this.forceFilter       = null;
 
         //Close any message-modal
         if (this.bsModalMessage)
@@ -189,7 +191,8 @@
 
             //In small-mode: Hide first column and hide table header and add selectbox with sorting options
             if (displayInSmallTable){
-                this.bsTable.$theadClone.parent().hide();
+                this.bsTable.$thead.hide();
+                this.bsTable.$theadClone.hide();
                 $.bsSelectBox({
                     fullWidth : true,
                     selectedId: this.sortBsTableBy || 'sort_date_desc',
@@ -207,19 +210,19 @@
         //If forceFilterDomain is set => Filter by domain
         if (forceFilterDomain){
             var filterDomainId = 'ALL';
-
             getDomainIdList().forEach( id => {
                 if ( id.toUpperCase().includes(forceFilterDomain.toUpperCase()) )
                     filterDomainId = id;
             });
-
-            this.filter({
+            forceFilter = {
                 domainId: filterDomainId,
                 area    : 'ALL',
                 chart   : 'ALL',
                 category: 'ALL'
-            });
+            };
         }
+
+        this.filter(forceFilter);
 
         //Display the modal with the table
         this.bsModal.show();
