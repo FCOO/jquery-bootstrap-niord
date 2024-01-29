@@ -91,7 +91,7 @@
         window.Niord.options.normalModalExtendable  = true;
         window.Niord.options.modalIsExtended        = !window.bsIsTouch;
 
-        window.Niord.options.smallTableWithAllMessages = true;//window.bsIsTouch;
+        window.Niord.options.smallTableWithAllMessages = window.bsIsTouch;
 
         window.Niord.options.createMap = function($element, message){
             $element.text('Antal geoJSON = ' + message.geoJSON.features.length);
@@ -105,7 +105,14 @@
         }
         
         window.Niord.options.fa_fe_combined = true;
-       
+
+       window.Niord.options.loadingOn = () => console.log('Loading ON');
+       window.Niord.options.loadingOff = () => console.log('Loading OFF');
+
+       window.Niord.options.domainIcon = {
+            nm: 'fa-home'
+        };
+
 /*
         moment.sfAddTimezone({id:'Pacific/Honolulu'});
         moment.sfSetFormat({ timezone: 'Pacific/Honolulu' });

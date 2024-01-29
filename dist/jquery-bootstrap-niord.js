@@ -25,6 +25,9 @@
     //Extend Niord.options
     ns.options = $.extend( true, {
 
+
+        offLine: false, //If true the data are read from another source than niord.dma and no other message can be loaded
+
         //domainIcon = options for icon for popup and modal header for each domain
         domainIcon: {
 
@@ -188,7 +191,7 @@
             linkValue    = $this.data('niord-link-value');
 
         if (linkId == 'message')
-                messages.messageAsModal(linkValue);
+            messages.messageAsModal(linkValue);
         else {
             messages.forceFilterDomain = null;
             messages.forceFilter = {
@@ -361,10 +364,17 @@
     };
 
     ns.Reference.prototype.bsObject = function(){
+        //Ref to other Message. Only link to Message that already exsists if offline = true
+        var messageExists =
+                currentMessages &&
+                ( currentMessages.messages[this.messageId] ||
+                  currentMessages.messagesByShortId[this.messageId] );
+
+        //function linkToModal( text, linkId, linkValue, postText )
         return linkToModal(
             this.messageId,
             'message',
-            this.messageId,
+            messageExists || !ns.options.offLine ? this.messageId : null,
             this.type && (this.type != 'REFERENCE') ? {text:'niord:'+this.type} : null
        );
     };
@@ -942,7 +952,10 @@
             return result;
         }
 
+        var icon = ns.options.domainIcon[this.domainId] || null;
+
         return {
+            icon    : icon ? {icon: icon} : '',
             id      : this.id,
             type    : this.mainType,
             shortId : this.shortId || this.domainId.toUpperCase(),
@@ -1280,7 +1293,8 @@
                 sortable: true, sortBy: $.proxy(this._sortMessage, this)
             }] :
             [
-                { id: 'shortId', noWrap: true,   header: 'Id', align: 'center' },
+                { id: 'icon',    noWrap: false,  header: '&nbsp;',                 align: 'center', width:'2em' },
+                { id: 'shortId', noWrap: true,   header: 'Id',                     align: 'center' },
                 { id: 'date',    noWrap: true,   header: {da:'Dato', en:'Date'},   align: 'center', vfFormat: ns.options.vfFormatId.date, sortable: true, sortBy:'moment_date', sortDefault: true/*'desc'*/},
                 { id: 'area',    noWrap: false,  header: {text:'niord:AREA'},      align: 'left',
                     //Options for sorting by area
@@ -1596,7 +1610,6 @@
         var _this         = this,
             textArray     = [{icon: ns.options.filterIcon}],
             filterOptions = this.filterOptions,
-            header        = null,
             filterExist   = false;
 
         $.each(this.filterOptions, function(id, value){
@@ -1608,7 +1621,6 @@
                 switch (id){
                     case 'domainId':
                         valueObj = {text: 'niord:'+value+'_plural'};
-                        header = valueObj;
                         if (hasValue(filterOptions.area) || hasValue(filterOptions.chart))
                             postfix = {da:'i', en:'in'};
 
@@ -1642,14 +1654,32 @@
            }
         });
 
-        //Update header and footer with filter-info
-        $( this.$bsModalHeader.find('span:first-child') )
-            .empty()
-            .html(header ? i18next.t(header.text) : '&nbsp;');
-
+        //Update footer and header with filter-info
         this.$bsModalFooter
             .empty()
             ._bsAddHtml(filterExist ? textArray : '&nbsp;');
+
+        //Find icon for header
+        var headerIcon = '';
+        $.each(this.filterOptions, function(id, value){
+            if (headerIcon || (value == 'ALL'))
+                return;
+            switch (id){
+                case 'domainId': headerIcon = ns.options.domainIcon[value] || '__TAKEN__'; break;
+                case 'area'    : headerIcon = ns.options.partIcon.AREA     || '__TAKEN__'; break;
+                case 'chart'   : headerIcon = ns.options.partIcon.CHART    || '__TAKEN__'; break;
+                case 'category': headerIcon = ns.options.partIcon.CATEGORY || '__TAKEN__'; break;
+            }
+        });
+
+        if (textArray.length)
+            textArray[0] = headerIcon && (headerIcon != '__TAKEN__') ? {icon: headerIcon} : '';
+
+        var $headerIconContainer = $( this.$bsModalHeader.find('.header-icon-container') ).detach();
+        this.$bsModalHeader
+            .empty()
+            ._bsAddHtml(filterExist ? textArray : '&nbsp;')
+            .append( $headerIconContainer );
     };
 
     /******************************************************

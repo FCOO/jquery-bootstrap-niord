@@ -25,6 +25,9 @@
     //Extend Niord.options
     ns.options = $.extend( true, {
 
+
+        offLine: false, //If true the data are read from another source than niord.dma and no other message can be loaded
+
         //domainIcon = options for icon for popup and modal header for each domain
         domainIcon: {
 
@@ -188,7 +191,7 @@
             linkValue    = $this.data('niord-link-value');
 
         if (linkId == 'message')
-                messages.messageAsModal(linkValue);
+            messages.messageAsModal(linkValue);
         else {
             messages.forceFilterDomain = null;
             messages.forceFilter = {
@@ -361,10 +364,17 @@
     };
 
     ns.Reference.prototype.bsObject = function(){
+        //Ref to other Message. Only link to Message that already exsists if offline = true
+        var messageExists =
+                currentMessages &&
+                ( currentMessages.messages[this.messageId] ||
+                  currentMessages.messagesByShortId[this.messageId] );
+
+        //function linkToModal( text, linkId, linkValue, postText )
         return linkToModal(
             this.messageId,
             'message',
-            this.messageId,
+            messageExists || !ns.options.offLine ? this.messageId : null,
             this.type && (this.type != 'REFERENCE') ? {text:'niord:'+this.type} : null
        );
     };
@@ -942,7 +952,10 @@
             return result;
         }
 
+        var icon = ns.options.domainIcon[this.domainId] || null;
+
         return {
+            icon    : icon ? {icon: icon} : '',
             id      : this.id,
             type    : this.mainType,
             shortId : this.shortId || this.domainId.toUpperCase(),
