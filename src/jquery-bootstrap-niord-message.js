@@ -98,13 +98,16 @@
     }, ns.options || {} );
 
     //__onClickCoordinate__ = internal function used if onClickCoordinate is given
-    ns.__onClickCoordinate__ = function(elem){
+    ns.__onClickCoordinate__ = function(elem, event){
         var $elem = $(elem),
             coordIdStr = $elem.data('coord_id'),
             list = coordIdStr.split(' '),
             coord = [parseFloat(list[0]), parseFloat(list[1])],
             messId = list.length >= 3 ? list[2] : null;
         ns.options.onClickCoordinate(coord, $elem.text(), messId);
+
+        event && event.stopPropagation ? event.stopPropagation() : null;
+        return false;
     };
 
 
@@ -545,7 +548,8 @@
                             text =
                                 text.replace(
                                     '>>>>>>>>'+index+'<<<<<<<<',
-                                    '<a data-coord_id="'+textAndCoord.coord[0]+' '+textAndCoord.coord[1]+' '+_this.id+'" href="javascript:undefined" onclick="window.Niord.__onClickCoordinate__(this)">'+textAndCoord.text+'</a>'
+                                    '<a data-coord_id="'+textAndCoord.coord[0]+' '+textAndCoord.coord[1]+' '+_this.id+'" href="javascript:undefined" onclick="window.Niord.__onClickCoordinate__(this, arguments[0])">'+textAndCoord.text+'</a>'
+
                                 );
                         });
                         _this.partList[partIndex][partId][lang] = text;
