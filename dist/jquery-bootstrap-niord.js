@@ -22,6 +22,16 @@
     window.Niord = window.Niord || {};
 	var ns = window.Niord;
 
+
+    //Internal method to create function that calls asModal (or other methods) for _this and pass all arguments
+    ns.asModal = function(_this, method = 'asModal'){
+        return function(){
+            return _this[method].apply(_this, arguments);
+        };
+    };
+
+
+
     //Extend Niord.options
     ns.options = $.extend( true, {
 
@@ -204,7 +214,7 @@
                 category: 'ALL'
             };
             messages.forceFilter[linkId] = linkValue;
-            messages.asModal();
+            messages.asModal.apply(messages, arguments);
         }
     }
 
@@ -1032,14 +1042,14 @@
     Message.bsModalSmallOptions
     Return options to create a small version for $.bsModal
     ******************************************************/
-    ns.Message.prototype.bsModalSmallOptions = function(modalOptions){
+    ns.Message.prototype.bsModalSmallOptions = function(){
         var result = {
                 header      : this.bsHeaderOptions(),
                 fixedContent: this.bsFixedContent(),
                 footer      : ns.options.modalSmallFooter,
 
                 //Extend the modal if ns.options.openNewModal is set
-                onNew                : ns.options.isSet('openNewModal') ? $.proxy(this.asModal, this) : null,
+                onNew                : ns.options.isSet('openNewModal') ? this.asModal.bind(this) : null,
                 closeButton          : false,
                 modalContentClassName: 'niord-modal-content'
             },
@@ -1057,14 +1067,14 @@
             footer      : ns.options.modalFooter
         };
 
-        return $.extend(true, result, modalOptions || {} );
+        return result;
     };
 
     /******************************************************
     Message.bsModalOptions
     Return standard options to create a $.bsModal
     ******************************************************/
-    ns.Message.prototype.bsModalOptions = function(modalOptions){
+    ns.Message.prototype.bsModalOptions = function(){
         var result = {
                 header      : this.bsHeaderOptions('NORMAL'),
                 fixedContent: this.bsFixedContent('NORMAL'),
@@ -1096,7 +1106,7 @@
             };
             result.isExtended = ns.options.isSet('modalIsExtended');
         }
-        return $.extend(true, result, modalOptions || {} );
+        return result;
     },
 
     ns.Message.prototype.bsModalOnClose = function(){
@@ -1105,37 +1115,12 @@
     },
 
     /******************************************************
-    Message.asModalSmall
-    NOT USED
-    ******************************************************/
-/*
-    ns.Message.prototype.asModalSmall = function(modalOptions){
-        return this._asModal( this.bsModalSmallOptions(modalOptions), true );
-    };
-*/
-    /******************************************************
     Message.asModal
     ******************************************************/
-    ns.Message.prototype.asModal = function(modalOptions){
-        return this._asModal( this.bsModalOptions(modalOptions) );
-    };
-
-    /******************************************************
-    Message._asModal
-    ******************************************************/
-    ns.Message.prototype._asModal = function(options, isSmall){
-        var _messages = this.messages;
-
-        _messages.messageModalIsSmall = isSmall;
-
-        var historyList = _messages.historyList = _messages.historyList ||
-            new window.HistoryList({
-                action: function( id ){
-                    var message = _messages.getMessage(id);
-                    _messages.messageModalIsSmall ? message.asModalSmall() : message.asModal();
-                }
-            });
-
+    ns.Message.prototype.asModal = function(){
+        var _messages = this.messages,
+            options = this.bsModalOptions(),
+            historyList = _messages.historyList = _messages.historyList || new window.HistoryList({action: _messages.messageAsModal.bind(_messages)});
 
         options.historyList = historyList;
         historyList.callAction = false;
@@ -1177,13 +1162,13 @@
 
 
     /******************************************************
-    Message._asModal
+    Message.messagesAsModal
     Open messages-modal filtered by this' domain
     ******************************************************/
     ns.Message.prototype.messagesAsModal = function(){
         var _messages = this.messages;
         _messages.forceFilterDomain = this.domainId;
-        _messages.asModal();
+        _messages.asModal.apply(_messages, arguments);
         return this;
     };
 
@@ -1441,7 +1426,7 @@
             icon   : 'fa-th-list',
             text   : {da:'Vis alle', en:'Show all'},
             class  : 'min-width-5em',
-            onClick: this.asModal.bind( this )
+            onClick: ns.asModal( this )
         };
     };
 
@@ -1744,7 +1729,7 @@
     *******************************************************
     ******************************************************/
     ns.Publications.prototype.show = function(){
-        this.getPublications( $.proxy( this.asModal, this ) );
+        this.getPublications( this.asModal.bind(this) );
     };
 
     ns.Publications.prototype.asModal = function(){
@@ -1794,7 +1779,7 @@
             icon   : ns.options.partIcon.PUBLICATION,
             text   : 'niord:publ',
             class  : 'min-width-5em',
-            onClick: this.asModal.bind( this )
+            onClick: ns.asModal( this )
         };
     };
 

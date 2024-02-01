@@ -238,7 +238,7 @@
             icon   : 'fa-th-list',
             text   : {da:'Vis alle', en:'Show all'},
             class  : 'min-width-5em',
-            onClick: this.asModal.bind( this )
+            onClick: ns.asModal( this )
         };
     };
 

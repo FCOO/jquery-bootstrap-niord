@@ -28,7 +28,7 @@
     *******************************************************
     ******************************************************/
     ns.Publications.prototype.show = function(){
-        this.getPublications( $.proxy( this.asModal, this ) );
+        this.getPublications( this.asModal.bind(this) );
     };
 
     ns.Publications.prototype.asModal = function(){
@@ -78,7 +78,7 @@
             icon   : ns.options.partIcon.PUBLICATION,
             text   : 'niord:publ',
             class  : 'min-width-5em',
-            onClick: this.asModal.bind( this )
+            onClick: ns.asModal( this )
         };
     };
 
