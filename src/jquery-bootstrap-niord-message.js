@@ -82,6 +82,7 @@
         openNewModal            : true,  //Boolean or function. If true a "new"-icon in small-modal will open a new modal. Typical used if small modals are use as popups and the screen is widther
         normalModalExtendable   : false, //Boolean or function. If true the mormal modal can extend to a version with map and inlined attachments. Typical on desktops
         modalIsExtended         : false, //Boolean or function. If true (and normalModalExtendable = true) the modal 'start' as extended (modal-option.isExtended: true)
+        modalInFullScreen       : false, //Boolean or function. If true the modal is in size = full-screen.  Normally on phones and other small screens
 
 
         createMap: null, //function($element, message, options): function to create a map inside $element and displaying the message.geoJSON
@@ -1075,6 +1076,9 @@
     Return standard options to create a $.bsModal
     ******************************************************/
     ns.Message.prototype.bsModalOptions = function(){
+        
+        const modalInFullScreen = ns.options.isSet('modalInFullScreen');
+              
         var result = {
                 header      : this.bsHeaderOptions('NORMAL'),
                 fixedContent: this.bsFixedContent('NORMAL'),
@@ -1082,8 +1086,11 @@
 
                 footer      : ns.options.modalFooter,
 
-                flexWidth   : true,
-                extraWidth  : true,
+                flexWidth           : !modalInFullScreen,
+                extraWidth          : !modalInFullScreen,
+                allowFullScreen     : !modalInFullScreen,                             
+
+                fullScreenWithBorder: modalInFullScreen,
 
                 onClose     : this.bsModalOnClose.bind(this),
 
@@ -1101,8 +1108,8 @@
                 content     : this.bsAccordionOptions({fullDate: true, largeVersion: true}, {allOpen: true, neverClose: true}, true),
                 footer      : true,
 
-                flexWidth   : true,
-                megaWidth   : true
+                flexWidth   : !modalInFullScreen,
+                megaWidth   : !modalInFullScreen
             };
             result.isExtended = ns.options.isSet('modalIsExtended');
         }

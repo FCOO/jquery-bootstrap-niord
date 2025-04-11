@@ -32,13 +32,16 @@
     };
 
     ns.Publications.prototype.asModal = function(){
+        const modalInFullScreen = ns.options.isSet('modalInFullScreen');
+        
         var options = {
                 header   : {
                     icon: ns.options.partIcon.PUBLICATIONS,
                     text: 'niord:publications'
                 },
-                flexWidth: true,
-                extraWidth: true,
+                extraWidth          : !modalInFullScreen,
+                fullScreenWithBorder: modalInFullScreen,
+                allowFullScreen     : !modalInFullScreen,                             
                 content: {
                     type     : 'accordion',
                     multiOpen: true,

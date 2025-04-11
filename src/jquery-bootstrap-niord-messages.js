@@ -148,8 +148,10 @@
                 selectable       : true,
                 allowZeroSelected: false,
                 allowReselect    : true,
+                showHeader       : !displayInSmallTable,                    
                 onChange         : $.proxy(this.messageAsModal, this ),
                 columns          : this.tableColumns(displayInSmallTable)
+                    
             };
 
             //Create table and add data
@@ -166,11 +168,14 @@
                 {icon: ns.options.filterIcon,      text:{da:'Filter', en:'Filter'}, onClick: $.proxy(this.filterAsModalForm, this)}
             );
 
+            const modalInFullScreen = ns.options.isSet('modalInFullScreen');
             var bsModalOptions = {
                 header     : '',
                 buttons    : buttons,
-                flexWidth  : true,
-                megaWidth  : true,
+
+                extraWidth          : !modalInFullScreen,
+                fullScreenWithBorder: modalInFullScreen,
+                allowFullScreen     : !modalInFullScreen,                             
 
                 static     : true,
                 show       : false,
@@ -192,8 +197,6 @@
 
             //In small-mode: Hide first column and hide table header and add selectbox with sorting options
             if (displayInSmallTable){
-                this.bsTable.$thead.hide();
-                this.bsTable.$theadClone.hide();
                 $.bsSelectBox({
                     fullWidth : true,
                     selectedId: this.sortBsTableBy || 'sort_date_desc',
@@ -266,6 +269,7 @@
         var ids = id.split('_'),
             dir = ids[2];
         this._sortBsTableBy = ids[1];
+
         this.bsTable.sortBy(0, dir);
     };
 
