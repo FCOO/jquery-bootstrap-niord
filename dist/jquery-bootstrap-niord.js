@@ -1368,7 +1368,7 @@
                 header     : '',
                 buttons    : buttons,
 
-                extraWidth          : !modalInFullScreen,
+                megaWidth           : !modalInFullScreen,
                 fullScreenWithBorder: modalInFullScreen,
                 allowFullScreen     : !modalInFullScreen,                             
 
